@@ -95,7 +95,7 @@ int bind(int sockfd, struct sockaddr *myaddr, socklen_t addrlen);
 ##### 调用`listen()`函数-连接电话线
 
 **函数原型**
-
+在服务器端创建套接字后，会依次调用listen函数和accept函数 。请比较并说明二者作用。
 ```c
 #include <sys/socket.h>
 int listen(int sockfd, int backlog);
