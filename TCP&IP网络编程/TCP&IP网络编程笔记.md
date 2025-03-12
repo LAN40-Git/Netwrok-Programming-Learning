@@ -7,7 +7,7 @@
 
 #### 1.1 理解网络编程和套接字
 
-#### **网络编程中接收连接请求的套接字过程**：
+**网络编程中接收连接请求的套接字过程**：
 
 1. 调用`socket()`创建套接字
 2. 调用`bind()`函数分配IP地址和端口号
@@ -27,7 +27,7 @@
 > **参数说明**
 >
 > 1. **`int domain`（协议域）**
->   指定套接字使用的协议族（地址族），常见值包括：
+>     指定套接字使用的协议族（地址族），常见值包括：
 > 
 >    - `AF_INET`：IPv4 协议（用于互联网通信）。
 >
@@ -38,7 +38,7 @@
 >    - `AF_PACKET`：底层数据包接口（用于抓包或自定义协议）。
 >
 > 2. **`int type`（套接字类型）**
->   指定套接字的类型，常见值包括：
+>     指定套接字的类型，常见值包括：
 > 
 >    - `SOCK_STREAM`：面向连接的流式套接字（如 TCP）。
 >
@@ -47,7 +47,7 @@
 >    - `SOCK_RAW`：原始套接字（用于自定义协议或访问底层网络层）。
 >
 > 3. **`int protocol`（协议）**
->   指定套接字使用的具体协议，通常设为 `0`，表示根据 `domain` 和 `type` 自动选择默认协议。例如：
+>     指定套接字使用的具体协议，通常设为 `0`，表示根据 `domain` 和 `type` 自动选择默认协议。例如：
 > 
 >    - `domain=AF_INET, type=SOCK_STREAM` 时，默认协议是 TCP。
 >
@@ -189,6 +189,23 @@
 >- 新的套接字描述符与原始的监听套接字不同，原始的监听套接字继续等待其他客户端连接。
 > - 如果等待连接队列为空，`accept` 会阻塞（默认情况下），直到有新的连接请求到达。
 
+##### 网络字节序转换函数
+
+```c
+#include <netinet/in.h>
+unsigned long int htonl ( unsigned long int hostlong );
+htonl 把unsigned long int类型从主机序转换到网络序
+ 
+unsigned short int htons ( unsigned short int hostlong );
+htons把unsigned short int类型从主机序转换到网络序
+ 
+unsigned long int ntohl ( unsigned long int netlong );
+ntohl 把unsigned long int类型从网络序转换到主机序　
+ 
+unsigned short int ntohs ( unsigned short int netshort ); 
+ntohs 把unsigned short int类型从网络序转换到主机序
+```
+
 #### 1.2 基于Linux的文件操作
 
 **底层文件访问和文件描述符**
@@ -205,7 +222,7 @@
 >
 > 文件和套接字一般经过创建过程才会分配文件描述符。而表1-1中的3中输入输出对象即使未经过特殊的创建过程，程序开始运行后也会被自动分配文件描述符。
 
-##### ​open()
+##### open()
 
 > **`open()`-打开文件**
 >
@@ -949,7 +966,7 @@ int socket(int domain, int type. int protocol);
 >
 >   面向消息的套接字特性可总结为：“不可靠的、不按顺序传递的、以数据的高速传输为目的的套接字”
 
-:small_orange_diamond:协议的最终选择
+:small_orange_diamond:**协议的最终选择**
 
   socket函数中的第三个参数决定最终采用的协议。
 
@@ -963,4 +980,61 @@ int socket(int domain, int type. int protocol);
 
 #### 2.2 Windows平台下的实现及验证
 
+**:small_orange_diamond:Windows操作系统的socket函数​**
+
+```c
+#include <winsock2.h>
+
+SOCKET socket(int af, int type, int protocol);
+```
+
+  返回值类型为`SOCKET`，此结构体用来保存整数型套接字句柄值。实际上，socket函数返回整数型数据，因此可以通过int型变量接受，就像在Linux中一样。但考虑到以后的扩展性，定义为SOCKET数据类型。
+
+  发生错误值返回`INVALID_SOCKET`，只需理解为提示错误的常数即可。其实际值为-1.
+
+  应尽量使用`SOCKET`，`INVALID_SOCKET`而不是常数。
+
 #### 2.3 习题
+
+(1) 什么时协议？在收发数据中定义协议有何意义？
+
+(2) 面向连接的TCP套接字传输特性有3点，请分别说明。
+
+- 传输过程中数据不会消失，面向连接的TCP套接字是可靠的连接，会保证数据不丢失。
+- 按序传输数据，数据按顺序传输。
+- 传输的数据没有数据边界，即不会限制每次传递数据的大小，并且调用一次`read()`即可读取所有缓冲区中的数据。
+
+(3) 下列哪些是面向消息的套接字的特性？
+
+​    a. 传输数据可能丢失
+
+​    b. 没有数据边界
+
+​    c. 以快速传递为目标
+
+​    d. 不限制每次传递数据的大小
+
+​    e. 与面向连接的套接字不同，不存在连接的概念
+
+​    a,b,c,e
+
+(4) 下列数据适合用哪类套接字传输？并给出原因。
+
+​    a. 演唱会现场直播的多媒体数据（面向消息的套接字，传输快，可保证数据实时传输，同时丢失较少）
+
+​    b. 某人压缩过的文本文件（面向连接的套接字，传输可靠，可保证数据不丢失）
+
+​    c. 网上银行用户与银行之间的数据传递（面向连接的套接字，传输可靠，可保证数据不丢失）
+
+(5) 何种类型的套接字不存在数据边界？这类套接字接收数据时需要注意什么？
+
+​    面向连接的套接字不存在数据边界。
+
+(6) tcp_server.c和 tcp_client.c中需多次调用read函数读取服务器端调用1次write函数传递的字符串。更改程序，使服务器端多次调用(次数自拟)write函数传输数据，客户端调用1次read函数进行读取。为达到这一目的，客户端需延迟调用read函数，因为客户端要等待服务器端传输所有数据。Windows和Linux都通过下列代码延迟read或recv函数的调用。
+
+```c
+for(i=0; i<3000; i++)
+	printf("Wait time %d \n" , i);
+```
+
+让CPU执行多余任务以延迟代码运行的方式称为"Busy Waiting"。使用得当即可推迟函数调用。
