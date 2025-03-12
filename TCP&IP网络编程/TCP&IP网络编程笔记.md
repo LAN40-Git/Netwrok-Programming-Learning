@@ -980,7 +980,7 @@ int socket(int domain, int type. int protocol);
 
 #### 2.2 Windows平台下的实现及验证
 
-**:small_orange_diamond:Windows操作系统的socket函数​**
+:small_orange_diamond:**Windows操作系统的socket函数​**
 
 ```c
 #include <winsock2.h>
@@ -1038,3 +1038,48 @@ for(i=0; i<3000; i++)
 ```
 
 让CPU执行多余任务以延迟代码运行的方式称为"Busy Waiting"。使用得当即可推迟函数调用。
+
+**Windows**
+
+服务端
+
+![image-20250312113534376](./assets/image-20250312113534376.png)
+
+客户端
+
+![image-20250312113542495](./assets/image-20250312113542495.png)
+
+**Linux**
+
+服务端
+
+![image-20250312113733993](./assets/image-20250312113733993.png)
+
+客户端
+
+![image-20250312113755635](./assets/image-20250312113755635.png)
+
+### 第3章 地址族与数据序列
+
+#### 3.1 分配给套接字的IP地址与端口号
+
+  IP时Internet Protocol（网络协议）的简写，是为收发完了过数据而分配给计算机的值。端口号并非赋予计算机的值，而是为区分程序中创建的套接字而分配给套接字的序号。
+
+:small_orange_diamond:**网络地址（Internet Address）**
+
+  为使计算机连接到完了过并收发数据，必须向其分配IP地址。IP地址分为两类。
+
+- IPv4（Internet Protocol version 4） 4字节地址族
+- IPv6（Internet Protocol Protocol version6） 16字节地址族
+
+  IPv4与IPv6的差别主要是标识IP地址所用的字节数。
+
+##### IPV4
+
+> IPv4标准的4字节IP地址分为网络地址和主机（指计算机）地址，且分为A、B、C、D、E等类型。图3-1展示了IPv4地址族，一般不会使用已被预约了的E类地址，故省略。
+>
+> ![image-20250312114926391](./assets/image-20250312114926391.png)
+>
+> <center>图 3-1 IPv4地址族</center>
+>
+> 
