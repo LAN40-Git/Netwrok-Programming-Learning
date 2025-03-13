@@ -1076,10 +1076,79 @@ for(i=0; i<3000; i++)
 
 ##### IPV4
 
-> IPv4标准的4字节IP地址分为网络地址和主机（指计算机）地址，且分为A、B、C、D、E等类型。图3-1展示了IPv4地址族，一般不会使用已被预约了的E类地址，故省略。
+>   IPv4标准的4字节IP地址分为网络地址和主机（指计算机）地址，且分为A、B、C、D、E等类型。图3-1展示了IPv4地址族，一般不会使用已被预约了的E类地址，故省略。
 >
 > ![image-20250312114926391](./assets/image-20250312114926391.png)
 >
 > <center>图 3-1 IPv4地址族</center>
 >
-> 
+>   网络地址（网络ID）是为区分网络而设置的一部分IP地址。假设向WWW.SEMI.COM公司传输数据，该公司内部构建了局域网，把所有计算机连接起来。因此，首先应向SEMI.COM网络传输数据，也就是说，并非一开始就浏览所有4字节IP地址，进而找到目标主机；而是仅浏览4字节IP地址的网络地址，先把数据传到SEMI.COM的网络（构成网络的路由器）接收到数据后，浏览传输数据的主机地址（主机ID）并将数据传给目标计算机。图3-2展示了数据传输过程。
+>
+> ![image-20250312220210275](./assets/image-20250312220210275.png)
+>
+> <center>图3-2 基于IP地址的数据传输过程</center>
+>
+>   某主机向203.211.172.103和203.211.217.202传输数据，其中203.211.172和203.211.217为该网络的网络地址。所以，“向相应网络传输数据”实际上是向构成网络的路由器（Router）或交换机（Switch）传递数据，由接收数据的路由器根据数据中的主机地址向目标主机传递数据。
+
+:small_orange_diamond:**用于区分套接字的端口号**
+
+>     IP用于区分计算机，只要由IP地址就能向目标主机传输数据，但仅凭这些无法传输给最终的应用程序。
+>
+>     计算机中一般配有NIC（Network Interface Card，网络接口卡）数据传输设备。通过NIC向计算机内部传输数据时会用到IP。操作系统负责把传递到内部的数据适当分配给套接字，这时参考的就是NIC接收的数据内的端口号。
+>
+>   ![image-20250312225756876](./assets/image-20250312225756876.png)
+>
+>   <center>图3-3 数据分配过程</center>
+>
+>     端口号就是在统一操作系统内为区分不同套接字而设置的，因此无法将1个端口号分配给不同套接字。端口号由16位组成，可分配的端口号范围时0-65535。但0-1023是知名端口（Well-known PORT），一般分配给特定应用程序，所以应当分配此范围之外的值。另外，虽然端口号不能重复，但TCP套接字和UDP套接字不会共用的端口号，诉讼一允许重复。例如：如果某TCP套接字使用9190号端口，则其它TCP套接字就无法使用该端口号，但UDP套接字可以使用。
+
+#### 3.2 地址信息的表示
+
+:small_orange_diamond:表示IPv4地址的结构体
+
+##### sturct sockaddr_in
+
+```c
+struct sockaddr_in
+{
+    sa_family_t sin_family; // 地址族
+    uint16_t    sin_port; // 16位TCP/UDP端口号
+    struct      in_addr sin_addr; // 32位IP地址
+    char        sin_zero[8]; // 不使用
+}
+```
+
+##### sturct in_addr
+
+```c
+struct in_addr
+{
+    In_addr_t s_addr; // 32位IPv4地址
+}
+```
+
+##### POSIX
+
+> Portable Operating System Interface，可移植操作系统接口
+>
+> POSIX是位UNIX系列操作系统设立的标准，它定义了一些其他数据类型，如表3-1所示。
+>
+> <center>表3-1 POSIX中定义的数据类型</center>
+>
+> | 数据类型名称  | 数据类型说明                        | 声明的头文件 |
+> | ------------- | ----------------------------------- | ------------ |
+> | `int8_t`      | signed 8-bit int                    | sys/types.h  |
+> | `uint8_t`     | unsigned 8-bit int(unsigned char)   | sys/types.h  |
+> | `int16_t`     | signed 16-bit int                   | sys/types.h  |
+> | `uint16_t`    | unsigned 16-bit int(unsigned short) | sys/types.h  |
+> | `int32_t`     | signed 32-bit int                   | sys/types.h  |
+> | `uint32_t`    | unsigned 32-bit int(unsigned long)  | sys/types.h  |
+> | `sa_family_t` | 地址族（address）                   | sys/socket.h |
+> | `socklen_t`   | 长度（length of struct）            | sys/socket.h |
+> | `in_addr_t`   | IP地址，声明为uint32_t              | netinet/in.h |
+> | `in_port_t`   | 端口号，声明位uint16_t              | netinet/in.h |
+>
+>    额外定义这些数据类型是为了未来的扩展。如果使用`int32_t`类型的数据，就能保证在任何时候都占用4字节，即使将来用64为表示int类型也是如此。
+
+
+
