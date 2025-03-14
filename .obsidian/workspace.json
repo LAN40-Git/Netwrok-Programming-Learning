@@ -1,0 +1,216 @@
+{
+  "main": {
+    "id": "d4d4f7dbcb709f76",
+    "type": "split",
+    "children": [
+      {
+        "id": "2a386c0adfa85b83",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "065901d35c193e6a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "TCP&IP网络编程笔记 的大纲"
+            }
+          },
+          {
+            "id": "fc27cf533942de69",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "TCP&IP网络编程笔记"
+            }
+          }
+        ],
+        "currentTab": 1
+      },
+      {
+        "id": "a86d9a56c7b4453d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "99b4a3a77df4a9d3",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "TCP&IP网络编程笔记 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b9c35ffa874a4778",
+    "type": "split",
+    "children": [
+      {
+        "id": "2dc991f4b4698eca",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1bf71700dde8e477",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "e1259df9d95a3ebc",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "93528cf90ead7391",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200,
+    "collapsed": true
+  },
+  "right": {
+    "id": "3dba133cb7931601",
+    "type": "split",
+    "children": [
+      {
+        "id": "80d679a67d9466b6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "936bdef8c357d441",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "TCP&IP网络编程笔记 的反向链接列表"
+            }
+          },
+          {
+            "id": "b0b56849af7e708e",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "TCP&IP网络编程笔记 的出链列表"
+            }
+          },
+          {
+            "id": "eefea444562c1d52",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "7eef7c80a4fb8434",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "TCP&IP网络编程笔记 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false
+    }
+  },
+  "active": "fc27cf533942de69",
+  "lastOpenFiles": [
+    "TCP&IP网络编程/assets/Pasted image 20250314232936.png",
+    "TCP&IP网络编程/assets/SumatraPDF_PpFIvqSWmR.png",
+    "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+    "TCP&IP网络编程/assets/【哲风壁纸】eva-新世纪福音战士.png"
+  ]
+}

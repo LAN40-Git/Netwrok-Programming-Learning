@@ -16,179 +16,179 @@
 
 ##### socket()
 
-> **函数原型**
->
-> ```c
->#include <sys/socket.h>
-> 
-> int socket(int domain, int type, int protocol);
-> ```
-> 
-> **参数说明**
->
-> 1. **`int domain`（协议域）**
->     指定套接字使用的协议族（地址族），常见值包括：
-> 
->    - `AF_INET`：IPv4 协议（用于互联网通信）。
->
->    - `AF_INET6`：IPv6 协议。                                                                
->
->    - `AF_UNIX` 或 `AF_LOCAL`：本地通信（Unix 域套接字）。
->
->    - `AF_PACKET`：底层数据包接口（用于抓包或自定义协议）。
->
-> 2. **`int type`（套接字类型）**
->     指定套接字的类型，常见值包括：
-> 
->    - `SOCK_STREAM`：面向连接的流式套接字（如 TCP）。
->
->    - `SOCK_DGRAM`：无连接的数据报套接字（如 UDP）。
->
->    - `SOCK_RAW`：原始套接字（用于自定义协议或访问底层网络层）。
->
-> 3. **`int protocol`（协议）**
->     指定套接字使用的具体协议，通常设为 `0`，表示根据 `domain` 和 `type` 自动选择默认协议。例如：
-> 
->    - `domain=AF_INET, type=SOCK_STREAM` 时，默认协议是 TCP。
->
->    - `domain=AF_INET, type=SOCK_DGRAM` 时，默认协议是 UDP。
->
-> 
->   如果需要显式指定协议，可以使用：
->
->    - `IPPROTO_TCP`：TCP 协议。
->
->    - `IPPROTO_UDP`：UDP 协议。
->
-> **返回值**
->
-> - **成功**：返回一个 **文件描述符**（非负整数），用于后续操作（如 `bind()`、`connect()`、`send()` 等）。
->- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
-> 
-> **功能描述**
->
-> - `socket` 函数创建一个套接字，套接字是网络通信的端点，用于实现进程间通信（IPC）或网络通信。
->- 套接字描述符类似于文件描述符，可以用于后续的 I/O 操作。
+ **函数原型**
 
+ ```c
+#include <sys/socket.h>
+ 
+ int socket(int domain, int type, int protocol);
+ ```
+ 
+ **参数说明**
+
+ 1. **`int domain`（协议域）**
+     指定套接字使用的协议族（地址族），常见值包括：
+ 
+    - `AF_INET`：IPv4 协议（用于互联网通信）。
+
+    - `AF_INET6`：IPv6 协议。                                                                
+
+    - `AF_UNIX` 或 `AF_LOCAL`：本地通信（Unix 域套接字）。
+
+    - `AF_PACKET`：底层数据包接口（用于抓包或自定义协议）。
+
+ 2. **`int type`（套接字类型）**
+     指定套接字的类型，常见值包括：
+ 
+    - `SOCK_STREAM`：面向连接的流式套接字（如 TCP）。
+
+    - `SOCK_DGRAM`：无连接的数据报套接字（如 UDP）。
+
+    - `SOCK_RAW`：原始套接字（用于自定义协议或访问底层网络层）。
+
+ 3. **`int protocol`（协议）**
+     指定套接字使用的具体协议，通常设为 `0`，表示根据 `domain` 和 `type` 自动选择默认协议。例如：
+ 
+    - `domain=AF_INET, type=SOCK_STREAM` 时，默认协议是 TCP。
+
+    - `domain=AF_INET, type=SOCK_DGRAM` 时，默认协议是 UDP。
+
+ 
+   如果需要显式指定协议，可以使用：
+
+    - `IPPROTO_TCP`：TCP 协议。
+
+    - `IPPROTO_UDP`：UDP 协议。
+
+ **返回值**
+
+ - **成功**：返回一个 **文件描述符**（非负整数），用于后续操作（如 `bind()`、`connect()`、`send()` 等）。
+- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
+ 
+ **功能描述**
+
+ - `socket` 函数创建一个套接字，套接字是网络通信的端点，用于实现进程间通信（IPC）或网络通信。
+- 套接字描述符类似于文件描述符，可以用于后续的 I/O 操作。
+---
 ##### bind()
 
-> **函数原型**
->
-> ```c
->#include <sys/socket.h>
-> 
-> int bind(int sockfd, struct sockaddr *myaddr, socklen_t addrlen);
-> ```
-> 
-> **参数说明**
->
-> 1. **`int sockfd`**
->   - 要绑定的套接字文件描述符，通常由 `socket()` 函数创建。
-> 
-> 
->2. **`struct sockaddr myaddr`**
->   - 指向 `struct sockaddr` 的指针，包含了要绑定的地址和端口信息。
-> 
->    - 实际使用时，通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）结构体，然后强制转换为 `struct sockaddr*`。
->
-> 
->3. **`socklen_t addrlen`**
->   - `myaddr` 结构体的长度，通常使用 `sizeof(struct sockaddr_in)` 或 `sizeof(struct sockaddr_in6)`。
->    - `socklen_t`是`unsigned int`类型
-> 
-> 
->**返回值**
->
-> - **成功**：返回 `0`。
->- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
-> 
-> **功能描述**
->
-> - `bind` 函数将套接字绑定到本地地址（IP 地址和端口号），以便其他进程可以通过该地址与套接字通信。
->- 对于服务器程序，绑定地址是必须的，以便客户端能够连接到服务器。
-> - 对于客户端程序，通常不需要显式绑定地址，系统会自动分配一个临时端口。
+ **函数原型**
 
+ ```c
+#include <sys/socket.h>
+ 
+ int bind(int sockfd, struct sockaddr *myaddr, socklen_t addrlen);
+ ```
+ 
+ **参数说明**
+
+ 1. **`int sockfd`**
+   - 要绑定的套接字文件描述符，通常由 `socket()` 函数创建。
+ 
+ 
+2. **`struct sockaddr myaddr`**
+   - 指向 `struct sockaddr` 的指针，包含了要绑定的地址和端口信息。
+ 
+    - 实际使用时，通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）结构体，然后强制转换为 `struct sockaddr*`。
+
+ 
+3. **`socklen_t addrlen`**
+   - `myaddr` 结构体的长度，通常使用 `sizeof(struct sockaddr_in)` 或 `sizeof(struct sockaddr_in6)`。
+    - `socklen_t`是`unsigned int`类型
+ 
+ 
+**返回值**
+
+ - **成功**：返回 `0`。
+- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
+ 
+ **功能描述**
+
+ - `bind` 函数将套接字绑定到本地地址（IP 地址和端口号），以便其他进程可以通过该地址与套接字通信。
+- 对于服务器程序，绑定地址是必须的，以便客户端能够连接到服务器。
+ - 对于客户端程序，通常不需要显式绑定地址，系统会自动分配一个临时端口。
+---
 ##### listen()
 
-> **函数原型**
->
-> ```c
->#include <sys/socket.h>
-> 
-> int listen(int sockfd, int backlog);
-> ```
-> 
-> **参数说明**
->
-> 1. **`sockfd`**
->   - 要设置为监听状态的套接字文件描述符，通常由 `socket()` 创建并通过 `bind()` 绑定到本地地址和端口。
-> 
-> 
->2. **`backlog`**
->
->    - 等待连接队列的最大长度。
->
->    - 当多个客户端同时请求连接时，未处理的连接请求会被放入队列，`backlog` 指定了队列的最大长度。
->
->    - 如果队列已满，新的连接请求会被拒绝。
->
->    - 通常设置为 `5` 到 `10`，具体值取决于服务器的负载能力。
->
-> 
->**返回值**
->
-> - **成功**：返回 `0`。
->- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
-> 
-> **功能描述**
->
-> - `listen` 函数将套接字设置为监听状态，使其能够接受客户端的连接请求。
->- 当客户端发起连接请求时，请求会被放入等待连接队列。
-> - 如果队列已满，新的连接请求会被拒绝。
+ **函数原型**
 
+ ```c
+#include <sys/socket.h>
+ 
+ int listen(int sockfd, int backlog);
+ ```
+ 
+ **参数说明**
+
+ 1. **`sockfd`**
+   - 要设置为监听状态的套接字文件描述符，通常由 `socket()` 创建并通过 `bind()` 绑定到本地地址和端口。
+ 
+ 
+2. **`backlog`**
+
+    - 等待连接队列的最大长度。
+
+    - 当多个客户端同时请求连接时，未处理的连接请求会被放入队列，`backlog` 指定了队列的最大长度。
+
+    - 如果队列已满，新的连接请求会被拒绝。
+
+    - 通常设置为 `5` 到 `10`，具体值取决于服务器的负载能力。
+
+ 
+**返回值**
+
+ - **成功**：返回 `0`。
+- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
+ 
+ **功能描述**
+
+ - `listen` 函数将套接字设置为监听状态，使其能够接受客户端的连接请求。
+- 当客户端发起连接请求时，请求会被放入等待连接队列。
+ - 如果队列已满，新的连接请求会被拒绝。
+---
 ##### accept()
 
-> **函数原型**
->
-> ```c
->#include <sys/socket.h>
-> 
-> int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
-> ```
-> 
-> **参数说明**
->
-> 1. **`sockfd`**
->   - 监听套接字的文件描述符，通常由 `socket()` 创建并通过 `bind()` 和 `listen()` 设置为监听状态。
-> 
-> 
->2. **`addr`**
->
->    - 指向 `struct sockaddr` 的指针，用于存储客户端的地址信息（如 IP 地址和端口）。
->
->    - 如果不需要客户端的地址信息，可以设置为 `NULL`。
->
-> 
->3. **`addrlen`**
->
->    - 指向 `socklen_t` 的指针，用于存储客户端地址结构体的长度。
->
->    - 调用 `accept()` 前，需要将其初始化为 `sizeof(struct sockaddr)`。
->
->    - 如果 `addr` 为 `NULL`，可以设置为 `NULL`。
->
-> 
->**返回值**
->
-> - **成功**：返回一个新的套接字文件描述符，用于与客户端通信。
->- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
-> 
-> **功能描述**
->
-> - `accept` 函数从等待连接队列中取出一个客户端连接请求，并创建一个新的套接字用于与客户端通信。
->- 新的套接字描述符与原始的监听套接字不同，原始的监听套接字继续等待其他客户端连接。
-> - 如果等待连接队列为空，`accept` 会阻塞（默认情况下），直到有新的连接请求到达。
+ **函数原型**
 
+ ```c
+#include <sys/socket.h>
+ 
+ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+ ```
+ 
+ **参数说明**
+
+ 1. **`sockfd`**
+   - 监听套接字的文件描述符，通常由 `socket()` 创建并通过 `bind()` 和 `listen()` 设置为监听状态。
+ 
+ 
+2. **`addr`**
+
+    - 指向 `struct sockaddr` 的指针，用于存储客户端的地址信息（如 IP 地址和端口）。
+
+    - 如果不需要客户端的地址信息，可以设置为 `NULL`。
+
+ 
+3. **`addrlen`**
+
+    - 指向 `socklen_t` 的指针，用于存储客户端地址结构体的长度。
+
+    - 调用 `accept()` 前，需要将其初始化为 `sizeof(struct sockaddr)`。
+
+    - 如果 `addr` 为 `NULL`，可以设置为 `NULL`。
+
+ 
+**返回值**
+
+ - **成功**：返回一个新的套接字文件描述符，用于与客户端通信。
+- **失败**：返回 `-1`，并设置 `errno` 以指示错误原因。
+ 
+ **功能描述**
+
+ - `accept` 函数从等待连接队列中取出一个客户端连接请求，并创建一个新的套接字用于与客户端通信。
+- 新的套接字描述符与原始的监听套接字不同，原始的监听套接字继续等待其他客户端连接。
+ - 如果等待连接队列为空，`accept` 会阻塞（默认情况下），直到有新的连接请求到达。
+---
 ##### 网络字节序转换函数
 
 ```c
@@ -205,490 +205,492 @@ ntohl 把unsigned long int类型从网络序转换到主机序　
 unsigned short int ntohs ( unsigned short int netshort ); 
 ntohs 把unsigned short int类型从网络序转换到主机序
 ```
-
+---
 #### 1.2 基于Linux的文件操作
 
 **底层文件访问和文件描述符**
 
-> 此处的文件描述符是系统分配给文件或套接字的整数。
->
-> <center>表1-1 分配给标准输出及标准错误的文件描述符</center>
->
-> | 文件描述符 | 对象                      |
-> | ---------- | ------------------------- |
-> | 0          | 标准输入：Standard Input  |
-> | 1          | 标准输出：Standard Output |
-> | 2          | 标准错误：Standard Error  |
->
-> 文件和套接字一般经过创建过程才会分配文件描述符。而表1-1中的3中输入输出对象即使未经过特殊的创建过程，程序开始运行后也会被自动分配文件描述符。
+ 此处的文件描述符是系统分配给文件或套接字的整数。
+
+ <center>表1-1 分配给标准输出及标准错误的文件描述符</center>
+
+| 文件描述符 | 对象                   |
+| ----- | -------------------- |
+| 0     | 标准输入：Standard Input  |
+| 1     | 标准输出：Standard Output |
+| 2     | 标准错误：Standard Error  |
+
+
+ 文件和套接字一般经过创建过程才会分配文件描述符。而表1-1中的3中输入输出对象即使未经过特殊的创建过程，程序开始运行后也会被自动分配文件描述符。
 
 ##### open()
 
-> **`open()`-打开文件**
->
-> **函数原型**
->
-> ```c
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> 
-> int open(const char *path, int flag);
-> ```
->
-> **参数解释**
->
-> 1. **`const char *path`**
->    - 这是一个字符串，表示要打开或创建的文件的路径。
->    - 路径可以是绝对路径（如 `/home/user/file.txt`）或相对路径（如 `./file.txt`）。
-> 2. **`int flag`**
->    - 这是一个整数值，用于指定文件的打开方式。它由以下标志（flags）按位或（`|`）组合而成：
->
-> <center>表1-2 文件打开模式</center>
->
-> | 打开模式   | 含义                       |
-> | ---------- | -------------------------- |
-> | `O_CREAT`  | 必要时创建文件             |
-> | `O_TRUNC`  | 删除全部现有数据           |
-> | `O_APPEND` | 维持现有数据，保存到其后面 |
-> | `O_RDONLY` | 只读打开                   |
-> | `O_WRONLY` | 只写打开                   |
-> | `O_RDWR`   | 读写打开                   |
->
-> 3. **`mode_t mode`（可选）**
->
-> - 当使用 `O_CREAT` 标志时，需要指定文件的权限模式（`mode`）。
-> - 权限模式是一个八进制数，例如 `0644` 表示文件所有者有读写权限，其他用户只有读权限。
->
-> **返回值**
->
-> - 成功时，`open` 返回一个文件描述符（`file descriptor`），这是一个非负整数，用于后续的文件操作（如 `read`、`write`、`close` 等）。
-> - 失败时，返回 `-1`，并设置 `errno` 以指示错误类型。
->
-> **功能描述**
->
-> - `open` 函数根据指定的路径和标志打开或创建一个文件，并返回一个文件描述符。
-> - 文件描述符是一个用于标识打开文件的整数，后续的文件操作（如读写、关闭）都通过该描述符进行。
+ **`open()`-打开文件**
+
+ **函数原型**
+
+ ```c
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ 
+ int open(const char *path, int flag);
+ ```
+
+ **参数解释**
+
+ 1. **`const char *path`**
+    - 这是一个字符串，表示要打开或创建的文件的路径。
+    - 路径可以是绝对路径（如 `/home/user/file.txt`）或相对路径（如 `./file.txt`）。
+ 2. **`int flag`**
+    - 这是一个整数值，用于指定文件的打开方式。它由以下标志（flags）按位或（`|`）组合而成：
+
+ <center>表1-2 文件打开模式</center>
+
+| 打开模式       | 含义            |
+| ---------- | ------------- |
+| `O_CREAT`  | 必要时创建文件       |
+| `O_TRUNC`  | 删除全部现有数据      |
+| `O_APPEND` | 维持现有数据，保存到其后面 |
+| `O_RDONLY` | 只读打开          |
+| `O_WRONLY` | 只写打开          |
+| `O_RDWR`   | 读写打开          |
+
+
+ 3. **`mode_t mode`（可选）**
+
+ - 当使用 `O_CREAT` 标志时，需要指定文件的权限模式（`mode`）。
+ - 权限模式是一个八进制数，例如 `0644` 表示文件所有者有读写权限，其他用户只有读权限。
+
+ **返回值**
+
+ - 成功时，`open` 返回一个文件描述符（`file descriptor`），这是一个非负整数，用于后续的文件操作（如 `read`、`write`、`close` 等）。
+ - 失败时，返回 `-1`，并设置 `errno` 以指示错误类型。
+
+ **功能描述**
+
+ - `open` 函数根据指定的路径和标志打开或创建一个文件，并返回一个文件描述符。
+ - 文件描述符是一个用于标识打开文件的整数，后续的文件操作（如读写、关闭）都通过该描述符进行。
 
 ##### close()
 
-> **`close()`-关闭文件**
->
-> **函数原型**
->
-> ```c
-> #include <unistd.h>
-> 
-> int close(int fd);
-> ```
->
-> **参数解释**
->
-> 1. **`int fd`**
->    - 这是要关闭的文件描述符，通常是由 `open`、`pipe`、`socket` 等函数返回的。
->    - 文件描述符是一个非负整数，用于标识打开的文件、管道、套接字等。
->
-> **返回值**
->
-> - **成功时**，`close` 返回 `0`。
-> - **失败时**，返回 `-1`，并设置 `errno` 以指示错误类型。
->
-> **功能描述**
->
-> - `close` 函数用于关闭一个文件描述符，释放与之相关的系统资源。
-> - 关闭文件描述符后，该描述符不再有效，后续尝试使用该描述符的操作会失败。
-> - 如果文件描述符是最后一个引用某个文件的描述符，文件会被真正关闭，所有未写入的数据会被刷新到磁盘。
+ **`close()`-关闭文件**
+
+ **函数原型**
+
+ ```c
+ #include <unistd.h>
+ 
+ int close(int fd);
+ ```
+
+ **参数解释**
+
+ 1. **`int fd`**
+    - 这是要关闭的文件描述符，通常是由 `open`、`pipe`、`socket` 等函数返回的。
+    - 文件描述符是一个非负整数，用于标识打开的文件、管道、套接字等。
+
+ **返回值**
+
+ - **成功时**，`close` 返回 `0`。
+ - **失败时**，返回 `-1`，并设置 `errno` 以指示错误类型。
+
+ **功能描述**
+
+ - `close` 函数用于关闭一个文件描述符，释放与之相关的系统资源。
+ - 关闭文件描述符后，该描述符不再有效，后续尝试使用该描述符的操作会失败。
+ - 如果文件描述符是最后一个引用某个文件的描述符，文件会被真正关闭，所有未写入的数据会被刷新到磁盘。
 
 ##### write()
 
-> **`write()`-将数据写入文件**
->
-> **函数原型**
->
-> ```c
-> #include <unistd.h>
-> 
-> ssize_t write(int fd, const void *buf, size_t nbytes);
-> ```
->
-> **参数解释**
->
-> 1. **`int fd`**
->    - 这是文件描述符，通常是由 `open`、`pipe`、`socket` 等函数返回的。
->    - 文件描述符是一个非负整数，用于标识打开的文件、管道、套接字等。
-> 2. **`const void *buf`**
->    - 这是一个指向要写入数据的缓冲区的指针。
->    - 数据从该缓冲区中读取并写入到文件描述符指定的目标。
-> 3. **`size_t nbytes`**
->    - 这是要写入的字节数。
->    - 指定从 `buf` 中读取并写入的字节数量。
->
-> **返回值**
->
-> - 成功时，返回实际写入的字节数（`ssize_t`类型）。
->   - 如果返回值小于 `nbytes`，可能是因为磁盘空间不足、文件大小限制或信号中断等原因。
-> - **失败时**，返回 `-1`，并设置 `errno` 以指示错误类型。
->
-> **类型说明**
->
-> `size_t`是通过typedef声明的`unsigned int`类型。
->
-> 对于`ssize_t`来说，`size_t`前面多加的s代表signed，即`ssize_t`是通过typedef声明的`signed int`类型。
->
-> **功能描述**
->
-> - `write` 函数将数据从缓冲区 `buf` 写入到文件描述符 `fd` 指定的目标。
-> - 写入的数据量可能小于 `nbytes`，具体取决于文件描述符的当前状态和可用空间。
-> - 对于普通文件，`write` 会从当前文件位置指针处开始写入，写入完成后文件位置指针会更新。
+ **`write()`-将数据写入文件**
+
+ **函数原型**
+
+ ```c
+ #include <unistd.h>
+ 
+ ssize_t write(int fd, const void *buf, size_t nbytes);
+ ```
+
+ **参数解释**
+
+ 1. **`int fd`**
+    - 这是文件描述符，通常是由 `open`、`pipe`、`socket` 等函数返回的。
+    - 文件描述符是一个非负整数，用于标识打开的文件、管道、套接字等。
+ 2. **`const void *buf`**
+    - 这是一个指向要写入数据的缓冲区的指针。
+    - 数据从该缓冲区中读取并写入到文件描述符指定的目标。
+ 3. **`size_t nbytes`**
+    - 这是要写入的字节数。
+    - 指定从 `buf` 中读取并写入的字节数量。
+
+ **返回值**
+
+ - 成功时，返回实际写入的字节数（`ssize_t`类型）。
+   - 如果返回值小于 `nbytes`，可能是因为磁盘空间不足、文件大小限制或信号中断等原因。
+ - **失败时**，返回 `-1`，并设置 `errno` 以指示错误类型。
+
+ **类型说明**
+
+ `size_t`是通过typedef声明的`unsigned int`类型。
+
+ 对于`ssize_t`来说，`size_t`前面多加的s代表signed，即`ssize_t`是通过typedef声明的`signed int`类型。
+
+ **功能描述**
+
+ - `write` 函数将数据从缓冲区 `buf` 写入到文件描述符 `fd` 指定的目标。
+ - 写入的数据量可能小于 `nbytes`，具体取决于文件描述符的当前状态和可用空间。
+ - 对于普通文件，`write` 会从当前文件位置指针处开始写入，写入完成后文件位置指针会更新。
 
 ##### read()
 
-> **`read()`-读取文件数据**
->
-> **函数原型**
->
-> ```c
-> #include <unistd.h>
-> 
-> ssize_t read(int __fd, void *__buf, size_t __nbytes);
-> ```
->
-> **参数解释**
->
-> 1. **`int __fd`**
->    - 这是文件描述符（File Descriptor），通常由 `open`、`pipe`、`socket` 等函数返回。
->    - 文件描述符是一个非负整数，用于标识打开的文件、管道、套接字等。
-> 2. **`void *__buf`**
->    - 这是一个指向缓冲区的指针，用于存储从文件描述符读取的数据。
->    - 缓冲区的大小必须足够容纳读取的数据。
-> 3. **`size_t __nbytes`**
->    - 这是要读取的字节数。
->    - 指定从文件描述符中读取的最大字节数。
->
-> **返回值**
->
-> - 成功时：
->   - 返回实际读取的字节数（`ssize_t` 类型）。
->   - 如果返回值为 0，表示已到达文件末尾（EOF）。
-> - 失败时：
->   - 返回 `-1`，并设置 `errno` 以指示错误类型。
->
-> **功能描述**
->
-> - `read` 函数从文件描述符 `__fd` 中读取最多 `__nbytes` 字节的数据，并将其存储到缓冲区 `__buf` 中。
-> - 读取的数据量可能小于 `__nbytes`，具体取决于文件描述符的当前状态和可用数据量。
-> - 对于普通文件，`read` 会从当前文件位置指针处开始读取，读取完成后文件位置指针会更新。
+ **`read()`-读取文件数据**
+
+ **函数原型**
+
+ ```c
+ #include <unistd.h>
+ 
+ ssize_t read(int __fd, void *__buf, size_t __nbytes);
+ ```
+
+ **参数解释**
+
+ 1. **`int __fd`**
+    - 这是文件描述符（File Descriptor），通常由 `open`、`pipe`、`socket` 等函数返回。
+    - 文件描述符是一个非负整数，用于标识打开的文件、管道、套接字等。
+ 2. **`void *__buf`**
+    - 这是一个指向缓冲区的指针，用于存储从文件描述符读取的数据。
+    - 缓冲区的大小必须足够容纳读取的数据。
+ 3. **`size_t __nbytes`**
+    - 这是要读取的字节数。
+    - 指定从文件描述符中读取的最大字节数。
+
+ **返回值**
+
+ - 成功时：
+   - 返回实际读取的字节数（`ssize_t` 类型）。
+   - 如果返回值为 0，表示已到达文件末尾（EOF）。
+ - 失败时：
+   - 返回 `-1`，并设置 `errno` 以指示错误类型。
+
+ **功能描述**
+
+ - `read` 函数从文件描述符 `__fd` 中读取最多 `__nbytes` 字节的数据，并将其存储到缓冲区 `__buf` 中。
+ - 读取的数据量可能小于 `__nbytes`，具体取决于文件描述符的当前状态和可用数据量。
+ - 对于普通文件，`read` 会从当前文件位置指针处开始读取，读取完成后文件位置指针会更新。
 
 #### 1.3 基于Windows平台的实现
 
 ##### WSAStartup()
 
-> **Winsock的初始化**
->
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int WSAStartup(WORD wVersionRequested, LPWSADATA lpWSAData);
-> ```
->
-> **参数解释**
->
-> 1. **`WORD wVersionRequested`**
->    - 这是一个 16 位的整数，用于指定请求的 Winsock 版本。
->    - 通常使用 `MAKEWORD(major, minor)` 宏来指定版本号，例如 `MAKEWORD(2, 2)` 表示请求 Winsock 2.2 版本。
-> 2. **`LPWSADATA lpWSAData`**
->    - 这是一个指向 `WSADATA` 结构体的指针，用于接收 Winsock 库的详细信息。
->    - `WSADATA` 结构体包含 Winsock 库的版本信息、实现细节等。
->
-> **返回值**
->
-> - **成功时**，返回 `0`。
-> - **失败时**，返回非零值，表示错误代码。
->
-> **功能描述**
->
-> - `WSAStartup` 函数用于初始化 Winsock 库，必须在调用其他 Winsock 函数之前调用。
-> - 它加载 Winsock 库并检查请求的版本是否可用。
-> - 如果请求的版本不可用，`WSAStartup` 会返回错误代码，并且不会初始化 Winsock 库。
+ **Winsock的初始化**
+
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int WSAStartup(WORD wVersionRequested, LPWSADATA lpWSAData);
+ ```
+
+ **参数解释**
+
+ 1. **`WORD wVersionRequested`**
+    - 这是一个 16 位的整数，用于指定请求的 Winsock 版本。
+    - 通常使用 `MAKEWORD(major, minor)` 宏来指定版本号，例如 `MAKEWORD(2, 2)` 表示请求 Winsock 2.2 版本。
+ 2. **`LPWSADATA lpWSAData`**
+    - 这是一个指向 `WSADATA` 结构体的指针，用于接收 Winsock 库的详细信息。
+    - `WSADATA` 结构体包含 Winsock 库的版本信息、实现细节等。
+
+ **返回值**
+
+ - **成功时**，返回 `0`。
+ - **失败时**，返回非零值，表示错误代码。
+
+ **功能描述**
+
+ - `WSAStartup` 函数用于初始化 Winsock 库，必须在调用其他 Winsock 函数之前调用。
+ - 它加载 Winsock 库并检查请求的版本是否可用。
+ - 如果请求的版本不可用，`WSAStartup` 会返回错误代码，并且不会初始化 Winsock 库。
 
 ##### WSACleanup()
 
-> **Winsock的注销**
->
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int WSACleanup(void);
-> ```
->
-> **参数**
->
-> - 无参数。
->
-> **返回值**
->
-> - **成功时**，返回 `0`。
-> - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `WSACleanup` 函数用于清理和卸载 Winsock 库，释放 Winsock 库占用的系统资源。
-> - 在调用 `WSAStartup` 初始化 Winsock 库后，必须在程序结束前调用 `WSACleanup`，以确保资源被正确释放。
-> - 如果程序中有多个 `WSAStartup` 调用，`WSACleanup` 只有在最后一个 `WSAStartup` 对应的调用时才会真正卸载 Winsock 库。
+ **Winsock的注销**
+
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int WSACleanup(void);
+ ```
+
+ **参数**
+
+ - 无参数。
+
+ **返回值**
+
+ - **成功时**，返回 `0`。
+ - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `WSACleanup` 函数用于清理和卸载 Winsock 库，释放 Winsock 库占用的系统资源。
+ - 在调用 `WSAStartup` 初始化 Winsock 库后，必须在程序结束前调用 `WSACleanup`，以确保资源被正确释放。
+ - 如果程序中有多个 `WSAStartup` 调用，`WSACleanup` 只有在最后一个 `WSAStartup` 对应的调用时才会真正卸载 Winsock 库。
 
 #### 1.4 基于Windows的套接字相关函数及示例
 
 ##### socket()
 
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> SOCKET socket(int af, int type, int protocol);
-> ```
->
-> **参数解释**
->
-> 1. **`int af`**
->    - 指定套接字的地址族（Address Family），常用的地址族包括：
->      - **`AF_INET`**：IPv4 地址族。
->      - **`AF_INET6`**：IPv6 地址族。
->      - **`AF_UNIX`**：本地套接字（Unix 域套接字）。
->      - **`AF_PACKET`**：底层数据包接口（用于网络数据包捕获）。
-> 2. **`int type`**
->    - 指定套接字的类型，常用的类型包括：
->      - **`SOCK_STREAM`**：面向连接的流套接字（如 TCP）。
->      - **`SOCK_DGRAM`**：无连接的数据报套接字（如 UDP）。
->      - **`SOCK_RAW`**：原始套接字（用于直接访问底层协议）。
-> 3. **`int protocol`**
->    - 指定套接字使用的协议，通常设置为 `0`，表示使用默认协议。例如：
->      - 对于 `AF_INET` 和 `SOCK_STREAM`，默认协议是 TCP。
->      - 对于 `AF_INET` 和 `SOCK_DGRAM`，默认协议是 UDP。
->      - 对于 `SOCK_RAW`，需要明确指定协议（如 `IPPROTO_ICMP`）。
->
-> **返回值**
->
-> - **成功时**，返回一个套接字描述符（`SOCKET` 类型），这是一个非负整数，用于后续的套接字操作（如 `bind`、`listen`、`accept`、`send`、`recv` 等）。
-> - **失败时**，返回 `INVALID_SOCKET`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `socket` 函数创建一个套接字，套接字是网络通信的端点，用于实现进程间通信（IPC）或网络通信。
-> - 套接字描述符类似于文件描述符，可以用于后续的 I/O 操作。
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ SOCKET socket(int af, int type, int protocol);
+ ```
+
+ **参数解释**
+
+ 1. **`int af`**
+    - 指定套接字的地址族（Address Family），常用的地址族包括：
+      - **`AF_INET`**：IPv4 地址族。
+      - **`AF_INET6`**：IPv6 地址族。
+      - **`AF_UNIX`**：本地套接字（Unix 域套接字）。
+      - **`AF_PACKET`**：底层数据包接口（用于网络数据包捕获）。
+ 2. **`int type`**
+    - 指定套接字的类型，常用的类型包括：
+      - **`SOCK_STREAM`**：面向连接的流套接字（如 TCP）。
+      - **`SOCK_DGRAM`**：无连接的数据报套接字（如 UDP）。
+      - **`SOCK_RAW`**：原始套接字（用于直接访问底层协议）。
+ 3. **`int protocol`**
+    - 指定套接字使用的协议，通常设置为 `0`，表示使用默认协议。例如：
+      - 对于 `AF_INET` 和 `SOCK_STREAM`，默认协议是 TCP。
+      - 对于 `AF_INET` 和 `SOCK_DGRAM`，默认协议是 UDP。
+      - 对于 `SOCK_RAW`，需要明确指定协议（如 `IPPROTO_ICMP`）。
+
+ **返回值**
+
+ - **成功时**，返回一个套接字描述符（`SOCKET` 类型），这是一个非负整数，用于后续的套接字操作（如 `bind`、`listen`、`accept`、`send`、`recv` 等）。
+ - **失败时**，返回 `INVALID_SOCKET`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `socket` 函数创建一个套接字，套接字是网络通信的端点，用于实现进程间通信（IPC）或网络通信。
+ - 套接字描述符类似于文件描述符，可以用于后续的 I/O 操作。
 
 ##### bind()
 
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int bind(SOCKET s, const struct sockaddr * name, int namelen);
-> ```
->
-> **参数解释**
->
-> 1. **`SOCKET s`**
->    - 这是套接字描述符，通常由 `socket` 函数创建。
-> 2. **`const struct sockaddr *name`**
->    - 这是一个指向 `sockaddr` 结构体的指针，包含要绑定的本地地址信息。
->    - 通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）来填充地址信息。
-> 3. **`int namelen`**
->    - 这是地址结构体的长度，通常使用 `sizeof(struct sockaddr_in)` 或 `sizeof(struct sockaddr_in6)`。
->
-> **地址结构体**
->
-> - 对于 IPv4，使用`struct sockaddr_in`
->
->   ```c
->   struct sockaddr_in {
->       short          sin_family;   // 地址族（如 AF_INET）
->       unsigned short sin_port;     // 端口号（网络字节序）
->       struct in_addr sin_addr;     // IP 地址（网络字节序）
->       char           sin_zero[8];  // 填充字段
->   };
->   ```
->
-> - 对于 IPv6，使用`struct sockaddr_in6`
->
->   ```c
->   struct sockaddr_in6 {
->       short          sin6_family;   // 地址族（如 AF_INET6）
->       unsigned short sin6_port;     // 端口号（网络字节序）
->       unsigned long  sin6_flowinfo; // 流信息
->       struct in6_addr sin6_addr;    // IPv6 地址（网络字节序）
->       unsigned long  sin6_scope_id; // 范围 ID
->   };
->   ```
->
-> **返回值**
->
-> - **成功时**，返回 `0`。
-> - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `bind` 函数将套接字绑定到本地地址（IP 地址和端口号），以便其他进程可以通过该地址与套接字通信。
-> - 对于服务器程序，绑定地址是必须的，以便客户端能够连接到服务器。
-> - 对于客户端程序，通常不需要显式绑定地址，系统会自动分配一个临时端口。
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int bind(SOCKET s, const struct sockaddr * name, int namelen);
+ ```
+
+ **参数解释**
+
+ 1. **`SOCKET s`**
+    - 这是套接字描述符，通常由 `socket` 函数创建。
+ 2. **`const struct sockaddr *name`**
+    - 这是一个指向 `sockaddr` 结构体的指针，包含要绑定的本地地址信息。
+    - 通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）来填充地址信息。
+ 3. **`int namelen`**
+    - 这是地址结构体的长度，通常使用 `sizeof(struct sockaddr_in)` 或 `sizeof(struct sockaddr_in6)`。
+
+ **地址结构体**
+
+ - 对于 IPv4，使用`struct sockaddr_in`
+
+   ```c
+   struct sockaddr_in {
+       short          sin_family;   // 地址族（如 AF_INET）
+       unsigned short sin_port;     // 端口号（网络字节序）
+       struct in_addr sin_addr;     // IP 地址（网络字节序）
+       char           sin_zero[8];  // 填充字段
+   };
+   ```
+
+ - 对于 IPv6，使用`struct sockaddr_in6`
+
+   ```c
+   struct sockaddr_in6 {
+       short          sin6_family;   // 地址族（如 AF_INET6）
+       unsigned short sin6_port;     // 端口号（网络字节序）
+       unsigned long  sin6_flowinfo; // 流信息
+       struct in6_addr sin6_addr;    // IPv6 地址（网络字节序）
+       unsigned long  sin6_scope_id; // 范围 ID
+   };
+   ```
+
+ **返回值**
+
+ - **成功时**，返回 `0`。
+ - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `bind` 函数将套接字绑定到本地地址（IP 地址和端口号），以便其他进程可以通过该地址与套接字通信。
+ - 对于服务器程序，绑定地址是必须的，以便客户端能够连接到服务器。
+ - 对于客户端程序，通常不需要显式绑定地址，系统会自动分配一个临时端口。
 
 ##### listen()
 
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int listen(SOCKET s, int backlog);
-> ```
->
-> **参数解释**
->
-> 1. **`SOCKET s`**
->    - 这是套接字描述符，通常由 `socket` 函数创建，并已通过 `bind` 函数绑定到本地地址。
-> 2. **`int backlog`**
->    - 这是等待连接队列的最大长度，表示同时可以处理的未完成连接请求的数量。
->    - 通常设置为一个正整数，例如 `5` 或 `10`，具体值取决于服务器的负载能力和需求。
->
-> **返回值**
->
-> - **成功时**，返回 `0`。
-> - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `listen` 函数将套接字设置为监听状态，使其能够接受客户端的连接请求。
-> - 当客户端发起连接请求时，请求会被放入等待连接队列。
-> - 如果队列已满，新的连接请求会被拒绝。
->
-> **等待连接队列**
->
-> - **未完成连接队列（Incomplete Connection Queue）**：
->    存储尚未完成三次握手的连接请求。
-> - **已完成连接队列（Completed Connection Queue）**：
->    存储已完成三次握手的连接请求，等待 `accept` 函数处理。
->
-> `backlog` 参数通常指定已完成连接队列的最大长度，但具体实现可能有所不同。
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int listen(SOCKET s, int backlog);
+ ```
+
+ **参数解释**
+
+ 1. **`SOCKET s`**
+    - 这是套接字描述符，通常由 `socket` 函数创建，并已通过 `bind` 函数绑定到本地地址。
+ 2. **`int backlog`**
+    - 这是等待连接队列的最大长度，表示同时可以处理的未完成连接请求的数量。
+    - 通常设置为一个正整数，例如 `5` 或 `10`，具体值取决于服务器的负载能力和需求。
+
+ **返回值**
+
+ - **成功时**，返回 `0`。
+ - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `listen` 函数将套接字设置为监听状态，使其能够接受客户端的连接请求。
+ - 当客户端发起连接请求时，请求会被放入等待连接队列。
+ - 如果队列已满，新的连接请求会被拒绝。
+
+ **等待连接队列**
+
+ - **未完成连接队列（Incomplete Connection Queue）**：
+    存储尚未完成三次握手的连接请求。
+ - **已完成连接队列（Completed Connection Queue）**：
+    存储已完成三次握手的连接请求，等待 `accept` 函数处理。
+
+ `backlog` 参数通常指定已完成连接队列的最大长度，但具体实现可能有所不同。
 
 ##### accept()
 
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int accept(SOCKET s, struct sockaddr *addr, int *addrlen);
-> ```
->
-> **参数解释**
->
-> 1. **`SOCKET s`**
->    - 这是处于监听状态的套接字描述符，通常由 `socket` 函数创建，并通过 `bind` 和 `listen` 函数设置为监听状态。
-> 2. **`struct sockaddr *addr`**
->    - 这是一个指向 `sockaddr` 结构体的指针，用于存储客户端的地址信息。
->    - 通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）来存储地址信息。
-> 3. **`int *addrlen`**
->    - 这是一个指向整数的指针，用于指定地址结构体的长度。
->    - 在调用 `accept` 之前，需要将 `*addrlen` 设置为地址结构体的长度（如 `sizeof(struct sockaddr_in)`）。
->    - 在 `accept` 返回后，`*addrlen` 会被设置为实际存储的地址长度。
->
-> **返回值**
->
-> - **成功时**，返回一个新的套接字描述符，用于与客户端通信。
-> - **失败时**，返回 `INVALID_SOCKET`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `accept` 函数从等待连接队列中取出一个客户端连接请求，并创建一个新的套接字用于与客户端通信。
-> - 新的套接字描述符与原始的监听套接字不同，原始的监听套接字继续等待其他客户端连接。
-> - 如果等待连接队列为空，`accept` 会阻塞（默认情况下），直到有新的连接请求到达。
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int accept(SOCKET s, struct sockaddr *addr, int *addrlen);
+ ```
+
+ **参数解释**
+
+ 1. **`SOCKET s`**
+    - 这是处于监听状态的套接字描述符，通常由 `socket` 函数创建，并通过 `bind` 和 `listen` 函数设置为监听状态。
+ 2. **`struct sockaddr *addr`**
+    - 这是一个指向 `sockaddr` 结构体的指针，用于存储客户端的地址信息。
+    - 通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）来存储地址信息。
+ 3. **`int *addrlen`**
+    - 这是一个指向整数的指针，用于指定地址结构体的长度。
+    - 在调用 `accept` 之前，需要将 `*addrlen` 设置为地址结构体的长度（如 `sizeof(struct sockaddr_in)`）。
+    - 在 `accept` 返回后，`*addrlen` 会被设置为实际存储的地址长度。
+
+ **返回值**
+
+ - **成功时**，返回一个新的套接字描述符，用于与客户端通信。
+ - **失败时**，返回 `INVALID_SOCKET`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `accept` 函数从等待连接队列中取出一个客户端连接请求，并创建一个新的套接字用于与客户端通信。
+ - 新的套接字描述符与原始的监听套接字不同，原始的监听套接字继续等待其他客户端连接。
+ - 如果等待连接队列为空，`accept` 会阻塞（默认情况下），直到有新的连接请求到达。
 
 ##### connect()
 
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int connect(SOCKET s, const struct sockaddr *name, int namelen);
-> ```
->
-> **参数解释**
->
-> 1. **`SOCKET s`**
->    - 这是套接字描述符，通常由 `socket` 函数创建。
-> 2. **`const struct sockaddr *name`**
->    - 这是一个指向 `sockaddr` 结构体的指针，包含远程服务器的地址信息。
->    - 通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）来填充地址信息。
-> 3. **`int namelen`**
->    - 这是地址结构体的长度，通常使用 `sizeof(struct sockaddr_in)` 或 `sizeof(struct sockaddr_in6)`。
->
-> **返回值**
->
-> - **成功时**，返回 `0`。
-> - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `connect` 函数用于将套接字连接到指定的远程服务器地址。
-> - 对于 TCP 套接字，`connect` 会发起三次握手，建立与服务器的连接。
-> - 对于 UDP 套接字，`connect` 仅设置默认的目标地址，不会实际建立连接。
->
-> **地址结构体**
->
-> - 对于 IPv4，使用`struct sockaddr_in`
->
->   ```c
->   struct sockaddr_in {
->       short          sin_family;   // 地址族（如 AF_INET）
->       unsigned short sin_port;     // 端口号（网络字节序）
->       struct in_addr sin_addr;     // IP 地址（网络字节序）
->       char           sin_zero[8]; // 填充字段
->   };
->   ```
->
-> - 对于 IPv6，使用`struct sockaddr_in6`
->
->   ```c
->   struct sockaddr_in6 {
->       short          sin6_family;   // 地址族（如 AF_INET6）
->       unsigned short sin6_port;     // 端口号（网络字节序）
->       unsigned long  sin6_flowinfo; // 流信息
->       struct in6_addr sin6_addr;    // IPv6 地址（网络字节序）
->       unsigned long  sin6_scope_id; // 范围 ID
->   };
->   ```
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int connect(SOCKET s, const struct sockaddr *name, int namelen);
+ ```
+
+ **参数解释**
+
+ 1. **`SOCKET s`**
+    - 这是套接字描述符，通常由 `socket` 函数创建。
+ 2. **`const struct sockaddr *name`**
+    - 这是一个指向 `sockaddr` 结构体的指针，包含远程服务器的地址信息。
+    - 通常使用 `struct sockaddr_in`（IPv4）或 `struct sockaddr_in6`（IPv6）来填充地址信息。
+ 3. **`int namelen`**
+    - 这是地址结构体的长度，通常使用 `sizeof(struct sockaddr_in)` 或 `sizeof(struct sockaddr_in6)`。
+
+ **返回值**
+
+ - **成功时**，返回 `0`。
+ - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `connect` 函数用于将套接字连接到指定的远程服务器地址。
+ - 对于 TCP 套接字，`connect` 会发起三次握手，建立与服务器的连接。
+ - 对于 UDP 套接字，`connect` 仅设置默认的目标地址，不会实际建立连接。
+
+ **地址结构体**
+
+ - 对于 IPv4，使用`struct sockaddr_in`
+
+   ```c
+   struct sockaddr_in {
+       short          sin_family;   // 地址族（如 AF_INET）
+       unsigned short sin_port;     // 端口号（网络字节序）
+       struct in_addr sin_addr;     // IP 地址（网络字节序）
+       char           sin_zero[8]; // 填充字段
+   };
+   ```
+
+ - 对于 IPv6，使用`struct sockaddr_in6`
+
+   ```c
+   struct sockaddr_in6 {
+       short          sin6_family;   // 地址族（如 AF_INET6）
+       unsigned short sin6_port;     // 端口号（网络字节序）
+       unsigned long  sin6_flowinfo; // 流信息
+       struct in6_addr sin6_addr;    // IPv6 地址（网络字节序）
+       unsigned long  sin6_scope_id; // 范围 ID
+   };
+   ```
 
 ##### closesocket()
 
-> **函数原型**
->
-> ```c
-> #include <winsock2.h>
-> 
-> int closesocket(SOCKET s);
-> ```
->
-> ### **参数解释**
->
-> 1. **`SOCKET s`**
->    - 这是要关闭的套接字描述符，通常由 `socket`、`accept` 等函数创建。
->
-> **返回值**
->
-> - **成功时**，返回 `0`。
-> - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
->
-> **功能描述**
->
-> - `closesocket` 函数用于关闭套接字，释放套接字占用的系统资源。
-> - 关闭套接字后，该套接字描述符不再有效，后续尝试使用该描述符的操作会失败。
-> - 如果套接字是最后一个引用某个连接的描述符，连接会被真正关闭，所有未发送的数据会被丢弃。
+ **函数原型**
+
+ ```c
+ #include <winsock2.h>
+ 
+ int closesocket(SOCKET s);
+ ```
+
+ ### **参数解释**
+
+ 1. **`SOCKET s`**
+    - 这是要关闭的套接字描述符，通常由 `socket`、`accept` 等函数创建。
+
+ **返回值**
+
+ - **成功时**，返回 `0`。
+ - **失败时**，返回 `SOCKET_ERROR`，并可以通过 `WSAGetLastError` 获取错误代码。
+
+ **功能描述**
+
+ - `closesocket` 函数用于关闭套接字，释放套接字占用的系统资源。
+ - 关闭套接字后，该套接字描述符不再有效，后续尝试使用该描述符的操作会失败。
+ - 如果套接字是最后一个引用某个连接的描述符，连接会被真正关闭，所有未发送的数据会被丢弃。
 
 #### 1.5 习题
 
@@ -915,15 +917,16 @@ int socket(int domain, int type. int protocol);
 
 协议分类信息称为协议族，可分为如下几类：
 
-> <center>表2-1 头文件sys/socket.h中声明的协议族</center>
->
-> | 名称        | 协议族               |
-> | ----------- | :------------------- |
-> | `PF_INET`   | IPv4互联网协议族     |
-> | `PF_INET6`  | IPv6互联网协议族     |
-> | `PF_LOCAL`  | 本地通信的UNIX协议族 |
-> | `PF_PACKET` | 底层套接字的协议族   |
-> | `PF_IPX`    | IPX Novell协议族     |
+ <center>表2-1 头文件sys/socket.h中声明的协议族</center>
+
+| 名称          | 协议族            |
+| ----------- | -------------- |
+| `PF_INET`   | IPv4互联网协议族     |
+| `PF_INET6`  | IPv6互联网协议族     |
+| `PF_LOCAL`  | 本地通信的UNIX协议族   |
+| `PF_PACKET` | 底层套接字的协议族      |
+| `PF_IPX`    |  IPX Novell协议族 |
+
 
 :small_orange_diamond:**套接字类型(Type)**
 
@@ -933,38 +936,38 @@ int socket(int domain, int type. int protocol);
 
 ##### SOCK_STREAM
 
-> **套接字类型1：面向连接的套接字(`SOCK_STREAM`)**
->
->   如果向socket函数的第二个参数传递`SOCK_STREAM`，将创建面向连接的套接字。
->
->   面向连接的套接字的传输方式特征：
->
-> - 传输过程中数据不会消失。
-> - 按序传输数据。
-> - 传输的数据不存在数据边界（例如传输数据的计算机通过3次调用write函数传递了100字节的数据，但接受数据的计算机仅通过1次read函数调用就接受了全部100个字节）。
->
->   收发数据的套接字内部有缓冲(buffer)，简言之就是字节数组。通过套接字传输的数据将保存到该数组。因此，收到数据不意味着马上调用read函数。只要不超过数组容量（就算缓冲区满了也不会丢失数据，因为传输端套接字将停止传输），则有可能在数据填充满缓冲后通过1次read函数调用读取全部，也有可能分成多次read函数调用进行读取。也就是说，在面向连接的套接字中，read函数和write函数的调用次数并无太大意义。
->
->   并且，面向连接的套接字只能与另外一个同样特性的套接字连接。
->
->   面向连接的套接字特性可总结为：“可靠的、按序传递的、基于字节的面向连接的数据传输方式的套接字。”
+ **套接字类型1：面向连接的套接字(`SOCK_STREAM`)**
+
+   如果向socket函数的第二个参数传递`SOCK_STREAM`，将创建面向连接的套接字。
+
+   面向连接的套接字的传输方式特征：
+
+ - 传输过程中数据不会消失。
+ - 按序传输数据。
+ - 传输的数据不存在数据边界（例如传输数据的计算机通过3次调用write函数传递了100字节的数据，但接受数据的计算机仅通过1次read函数调用就接受了全部100个字节）。
+
+   收发数据的套接字内部有缓冲(buffer)，简言之就是字节数组。通过套接字传输的数据将保存到该数组。因此，收到数据不意味着马上调用read函数。只要不超过数组容量（就算缓冲区满了也不会丢失数据，因为传输端套接字将停止传输），则有可能在数据填充满缓冲后通过1次read函数调用读取全部，也有可能分成多次read函数调用进行读取。也就是说，在面向连接的套接字中，read函数和write函数的调用次数并无太大意义。
+
+   并且，面向连接的套接字只能与另外一个同样特性的套接字连接。
+
+   面向连接的套接字特性可总结为：“可靠的、按序传递的、基于字节的面向连接的数据传输方式的套接字。”
 
 ##### SOCK_DGRAM
 
-> **套接字类型2：面向消息的套接字(`SOCK_DGRAM`)**
->
->   如果向socket函数的第二个参数传递`SOCK_DGRAM`，则将创建面向消息的套接字。
->
->   面向消息的套接字的传输方式特征：
->
-> - 强调快速传输而非传输顺序。
-> - 传输的数据可能丢失也可能损毁。
-> - 传输的数据有数据边界。
-> - 限制每次传输的数据大小。
->
->   面向消息的套接字比面向连接的套接字具有更快的传输速度，但无法避免数据丢失或损毁。另外，每次传输的数据大小具有一定限制，并存在数据边界。存在数据边界意味着接收数据的次数应和传输次数相同。
->
->   面向消息的套接字特性可总结为：“不可靠的、不按顺序传递的、以数据的高速传输为目的的套接字”
+ **套接字类型2：面向消息的套接字(`SOCK_DGRAM`)**
+
+   如果向socket函数的第二个参数传递`SOCK_DGRAM`，则将创建面向消息的套接字。
+
+   面向消息的套接字的传输方式特征：
+
+ - 强调快速传输而非传输顺序。
+ - 传输的数据可能丢失也可能损毁。
+ - 传输的数据有数据边界。
+ - 限制每次传输的数据大小。
+
+   面向消息的套接字比面向连接的套接字具有更快的传输速度，但无法避免数据丢失或损毁。另外，每次传输的数据大小具有一定限制，并存在数据边界。存在数据边界意味着接收数据的次数应和传输次数相同。
+
+   面向消息的套接字特性可总结为：“不可靠的、不按顺序传递的、以数据的高速传输为目的的套接字”
 
 :small_orange_diamond:**协议的最终选择**
 
@@ -1076,31 +1079,31 @@ for(i=0; i<3000; i++)
 
 ##### IPV4
 
->   IPv4标准的4字节IP地址分为网络地址和主机（指计算机）地址，且分为A、B、C、D、E等类型。图3-1展示了IPv4地址族，一般不会使用已被预约了的E类地址，故省略。
->
-> ![image-20250312114926391](./assets/image-20250312114926391.png)
->
-> <center>图 3-1 IPv4地址族</center>
->
->   网络地址（网络ID）是为区分网络而设置的一部分IP地址。假设向WWW.SEMI.COM公司传输数据，该公司内部构建了局域网，把所有计算机连接起来。因此，首先应向SEMI.COM网络传输数据，也就是说，并非一开始就浏览所有4字节IP地址，进而找到目标主机；而是仅浏览4字节IP地址的网络地址，先把数据传到SEMI.COM的网络（构成网络的路由器）接收到数据后，浏览传输数据的主机地址（主机ID）并将数据传给目标计算机。图3-2展示了数据传输过程。
->
-> ![image-20250312220210275](./assets/image-20250312220210275.png)
->
-> <center>图3-2 基于IP地址的数据传输过程</center>
->
->   某主机向203.211.172.103和203.211.217.202传输数据，其中203.211.172和203.211.217为该网络的网络地址。所以，“向相应网络传输数据”实际上是向构成网络的路由器（Router）或交换机（Switch）传递数据，由接收数据的路由器根据数据中的主机地址向目标主机传递数据。
+   IPv4标准的4字节IP地址分为网络地址和主机（指计算机）地址，且分为A、B、C、D、E等类型。图3-1展示了IPv4地址族，一般不会使用已被预约了的E类地址，故省略。
+
+ ![image-20250312114926391](./assets/image-20250312114926391.png)
+
+ <center>图 3-1 IPv4地址族</center>
+
+   网络地址（网络ID）是为区分网络而设置的一部分IP地址。假设向WWW.SEMI.COM公司传输数据，该公司内部构建了局域网，把所有计算机连接起来。因此，首先应向SEMI.COM网络传输数据，也就是说，并非一开始就浏览所有4字节IP地址，进而找到目标主机；而是仅浏览4字节IP地址的网络地址，先把数据传到SEMI.COM的网络（构成网络的路由器）接收到数据后，浏览传输数据的主机地址（主机ID）并将数据传给目标计算机。图3-2展示了数据传输过程。
+
+ ![image-20250312220210275](./assets/image-20250312220210275.png)
+
+ <center>图3-2 基于IP地址的数据传输过程</center>
+
+   某主机向203.211.172.103和203.211.217.202传输数据，其中203.211.172和203.211.217为该网络的网络地址。所以，“向相应网络传输数据”实际上是向构成网络的路由器（Router）或交换机（Switch）传递数据，由接收数据的路由器根据数据中的主机地址向目标主机传递数据。
 
 :small_orange_diamond:**用于区分套接字的端口号**
 
->     IP用于区分计算机，只要由IP地址就能向目标主机传输数据，但仅凭这些无法传输给最终的应用程序。
->
->     计算机中一般配有NIC（Network Interface Card，网络接口卡）数据传输设备。通过NIC向计算机内部传输数据时会用到IP。操作系统负责把传递到内部的数据适当分配给套接字，这时参考的就是NIC接收的数据内的端口号。
->
->   ![image-20250312225756876](./assets/image-20250312225756876.png)
->
->   <center>图3-3 数据分配过程</center>
->
->     端口号就是在统一操作系统内为区分不同套接字而设置的，因此无法将1个端口号分配给不同套接字。端口号由16位组成，可分配的端口号范围时0-65535。但0-1023是知名端口（Well-known PORT），一般分配给特定应用程序，所以应当分配此范围之外的值。另外，虽然端口号不能重复，但TCP套接字和UDP套接字不会共用的端口号，诉讼一允许重复。例如：如果某TCP套接字使用9190号端口，则其它TCP套接字就无法使用该端口号，但UDP套接字可以使用。
+     IP用于区分计算机，只要由IP地址就能向目标主机传输数据，但仅凭这些无法传输给最终的应用程序。
+
+     计算机中一般配有NIC（Network Interface Card，网络接口卡）数据传输设备。通过NIC向计算机内部传输数据时会用到IP。操作系统负责把传递到内部的数据适当分配给套接字，这时参考的就是NIC接收的数据内的端口号。
+
+   ![image-20250312225756876](./assets/image-20250312225756876.png)
+
+   <center>图3-3 数据分配过程</center>
+
+     端口号就是在统一操作系统内为区分不同套接字而设置的，因此无法将1个端口号分配给不同套接字。端口号由16位组成，可分配的端口号范围时0-65535。但0-1023是知名端口（Well-known PORT），一般分配给特定应用程序，所以应当分配此范围之外的值。另外，虽然端口号不能重复，但TCP套接字和UDP套接字不会共用的端口号，诉讼一允许重复。例如：如果某TCP套接字使用9190号端口，则其它TCP套接字就无法使用该端口号，但UDP套接字可以使用。
 
 #### 3.2 地址信息的表示
 
@@ -1129,26 +1132,80 @@ struct in_addr
 
 ##### POSIX
 
-> Portable Operating System Interface，可移植操作系统接口
->
-> POSIX是位UNIX系列操作系统设立的标准，它定义了一些其他数据类型，如表3-1所示。
->
-> <center>表3-1 POSIX中定义的数据类型</center>
->
-> | 数据类型名称  | 数据类型说明                        | 声明的头文件 |
-> | ------------- | ----------------------------------- | ------------ |
-> | `int8_t`      | signed 8-bit int                    | sys/types.h  |
-> | `uint8_t`     | unsigned 8-bit int(unsigned char)   | sys/types.h  |
-> | `int16_t`     | signed 16-bit int                   | sys/types.h  |
-> | `uint16_t`    | unsigned 16-bit int(unsigned short) | sys/types.h  |
-> | `int32_t`     | signed 32-bit int                   | sys/types.h  |
-> | `uint32_t`    | unsigned 32-bit int(unsigned long)  | sys/types.h  |
-> | `sa_family_t` | 地址族（address）                   | sys/socket.h |
-> | `socklen_t`   | 长度（length of struct）            | sys/socket.h |
-> | `in_addr_t`   | IP地址，声明为uint32_t              | netinet/in.h |
-> | `in_port_t`   | 端口号，声明位uint16_t              | netinet/in.h |
->
->    额外定义这些数据类型是为了未来的扩展。如果使用`int32_t`类型的数据，就能保证在任何时候都占用4字节，即使将来用64为表示int类型也是如此。
+ Portable Operating System Interface，可移植操作系统接口
+
+ POSIX是位UNIX系列操作系统设立的标准，它定义了一些其他数据类型，如表3-1所示。
+
+ <center>表3-1 POSIX中定义的数据类型</center>
+
+| 数据类型名称        | 数据类型说明                              | 声明的头文件       |
+| ------------- | ----------------------------------- | ------------ |
+| `int8_t`      | signed 8-bit int                    | sys/types.h  |
+| `uint8_t`     | unsigned 8-bit int(unsigned char)   | sys/types.h  |
+| `int16_t`     | signed 16-bit int                   | sys/types.h  |
+| `uint16_t`    | unsigned 16-bit int(unsigned short) | sys/types.h  |
+| `int32_t`     | signed 32-bit int                   | sys/types.h  |
+| `uint32_t`    | unsigned 32-bit int(unsigned long)  | sys/types.h  |
+| `sa_family_t` | 地址族（address）                        | sys/socket.h |
+| `socklen_t`   | 长度（length of struct）                | sys/socket.h |
+| `in_addr_t`   | IP地址，声明为uint32_t                    | netinet/in.h |
+| `in_port_t`   | 端口号，声明位uint16_t                     | netinet/in.h |
 
 
+额外定义这些数据类型是为了未来的扩展。如果使用`int32_t`类型的数据，就能保证在任何时候都占用4字节，即使将来用64为表示int类型也是如此。
 
+**结构体`sockaddr_in`的成员分析**
+- 成员`sin_family`
+  每种协议族使用的地址族均不同。比如，IPv4使用4字节地址族，IPv6使用16字节地址族。
+<center>表3-2 地址族</center>
+
+| 地址族        | 含义                 |
+| ---------- | ------------------ |
+| `AF_INET`  | IPv4网络协议中使用的地址族    |
+| `AF_INET6` | IPv6网络协议中使用的地址族    |
+| `AF_LOCAL` | 本地通信中采用的UNIX协议的地址族 |
+
+- 成员`sin_port`
+  该成员保留16位端口号，并以网络字节序保存。
+- 成员`sin_addr`
+  该成员保存32为IP地址信息，且也以网络字节序保存。
+- 成员`sin_zero`
+  无特殊含义。只是为使结构体`sockaddr_in`的大小与`sockaddr`结构体保持一致而插入的成员。必须填充为0，否则无法得到想要的结果。
+#### 3.3 网络字节序与地址变换
+  不同CPU中，4字节整数型值1在内存空间的保存方式是不同的。4字节整数型可用2进制表示如下。
+  00000000 00000000 00000000 00000001
+  有些CPU以这种顺序保存到内存，另外一些CPU则以倒序保存。
+  00000001 00000000 00000000 00000000
+  若不考虑这些就收发数据会发生问题，因为保存顺序的不同意味着对接受数据的解析顺序也不同。
+**字节序（Order）与网络字节序**
+  CPU向内存保存数据的方式有2种，这意味着CPU解析数据的方式也分2种。
+  - 大端序（Big Endian）：高位字节存放到低位地址。
+  - 小端序（Little Endian）：高位字节存放到高位地址。
+  例：
+  假设在0x20号开始的地址中保存4字节int类型数0x12345678。打断CPU保存方式如图3-4所示。
+  ![[Pasted image 20250314232936.png]]
+  <center>图3-4 大端序字节表示</center>
+  整数0x12345678中，0x12是最高位字节，0x78是最低位字节。因此，大端序中先保存最高位字节0x12（最高位字节0x12存放到低位地址）。小端序保存方式如图3-5所示。
+  ![[SumatraPDF_PpFIvqSWmR.png]]
+    <center>图3-5 小端序字节表示</center>
+ 先保存的是最低为字节0x78。
+ 
+> [!NOTE] 记忆技巧
+> 可以把端理解为（分区上的）最低位字节，大端说明端上的是数据中的最高位字节，小端说明端上的是最低位字节。这样就可以判断CPU的字节序。
+
+通过网络传输数据时采用网络字节序——统一为大端序。计算机在上传数据时需要先将数据转换为大端序，然后再发送， 在接收数据时会自动转为主机字节序。
+
+**字节序转换（Endian Conversions）**
+上面讲述了在填充`sockaddr_in`结构体前将数据转换成网络字节序的原因。接下来介绍帮助转换字节序的函数。
+``` c
+  unsigned short htons(unsigned short);
+  unsigned short ntohs(unsigned short);
+  unsigned long htonl(unsigned long);
+  unsigned long ntohl(unsigned long);
+```
+通过函数名应该能掌握其功能，只需了解以下细节。
+- htons中的h代表主机（host）字节序。
+- htons中的n代表网络（network）字节序。
+另外，s指的是`short`，l指的是`long`（Linux中long类型占用4个字节这很关键）。因此，htons是h、to、n、s的组合，也可以解释为“把short型数据从主机字节序转化为网络字节序”；ntohs可以解释为“把short型数据从主机字节序转化为主机字节序”。
+通常，以s作为后缀的函数中，s代表2个字节short，因此用于端口号转换；以l作为后缀的函数中，l代表4个字节，因此用于IP地址转换。
+注意：即使确认自己系统的主机序是大端序，最好也经过主机字节序转换为网络字节序的过程。
