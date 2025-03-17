@@ -8,21 +8,6 @@
         "type": "tabs",
         "children": [
           {
-            "id": "065901d35c193e6a",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "TCP&IP网络编程笔记 的大纲"
-            }
-          },
-          {
             "id": "fc27cf533942de69",
             "type": "leaf",
             "state": {
@@ -34,28 +19,6 @@
               },
               "icon": "lucide-file",
               "title": "TCP&IP网络编程笔记"
-            }
-          }
-        ],
-        "currentTab": 1
-      },
-      {
-        "id": "a86d9a56c7b4453d",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "99b4a3a77df4a9d3",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "TCP&IP网络编程笔记 的大纲"
             }
           }
         ]

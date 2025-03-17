@@ -1216,5 +1216,15 @@ struct in_addr
 #include <arpa/inet.h>
 
 in_addr_t inet_addr(const char *string);
+// 成功时返回32位大端序整数型值，失败时返回INADDR_NONE
 ```
 如果向该函数传递类似“211.214.107.99”的点分十进制格式的字符串，它会将其转换成32位整数型数据（满足网络字节序）并返回。该函数的返回值类型in_addr_t在内部声明为32位整数型。
+`inet_aton`函数与`inet_addr`函数在功能上完全相同，也将字符串形式IP地址转换成32位网络字节序整数返回。只不过该函数利用了`in_addr`结构体，且其使用频率更高。
+``` c
+#include <arpa/inet.h>
+
+int inet_aton(const char *string, struct in_addr *addr);
+// 成功时返回1（true），失败时返回0（false）。
+// string：含有需要转换的IP地址信息和字符串地址值
+// addr：将保存转换结果的in_addr结构体变量的地址值
+```
