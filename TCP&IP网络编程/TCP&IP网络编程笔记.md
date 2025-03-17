@@ -1068,7 +1068,7 @@ for(i=0; i<3000; i++)
 
   IP时Internet Protocol（网络协议）的简写，是为收发完了过数据而分配给计算机的值。端口号并非赋予计算机的值，而是为区分程序中创建的套接字而分配给套接字的序号。
 
-:small_orange_diamond:**网络地址（Internet Address）**
+**网络地址（Internet Address）**
 
   为使计算机连接到完了过并收发数据，必须向其分配IP地址。IP地址分为两类。
 
@@ -1093,21 +1093,21 @@ for(i=0; i<3000; i++)
 
    某主机向203.211.172.103和203.211.217.202传输数据，其中203.211.172和203.211.217为该网络的网络地址。所以，“向相应网络传输数据”实际上是向构成网络的路由器（Router）或交换机（Switch）传递数据，由接收数据的路由器根据数据中的主机地址向目标主机传递数据。
 
-:small_orange_diamond:**用于区分套接字的端口号**
+**用于区分套接字的端口号**
 
-     IP用于区分计算机，只要由IP地址就能向目标主机传输数据，但仅凭这些无法传输给最终的应用程序。
+ IP用于区分计算机，只要由IP地址就能向目标主机传输数据，但仅凭这些无法传输给最终的应用程序。
 
-     计算机中一般配有NIC（Network Interface Card，网络接口卡）数据传输设备。通过NIC向计算机内部传输数据时会用到IP。操作系统负责把传递到内部的数据适当分配给套接字，这时参考的就是NIC接收的数据内的端口号。
+ 计算机中一般配有NIC（Network Interface Card，网络接口卡）数据传输设备。通过NIC向计算机内部传输数据时会用到IP。操作系统负责把传递到内部的数据适当分配给套接字，这时参考的就是NIC接收的数据内的端口号。
 
    ![image-20250312225756876](./assets/image-20250312225756876.png)
 
    <center>图3-3 数据分配过程</center>
 
-     端口号就是在统一操作系统内为区分不同套接字而设置的，因此无法将1个端口号分配给不同套接字。端口号由16位组成，可分配的端口号范围时0-65535。但0-1023是知名端口（Well-known PORT），一般分配给特定应用程序，所以应当分配此范围之外的值。另外，虽然端口号不能重复，但TCP套接字和UDP套接字不会共用的端口号，诉讼一允许重复。例如：如果某TCP套接字使用9190号端口，则其它TCP套接字就无法使用该端口号，但UDP套接字可以使用。
+ 端口号就是在统一操作系统内为区分不同套接字而设置的，因此无法将1个端口号分配给不同套接字。端口号由16位组成，可分配的端口号范围时0-65535。但0-1023是知名端口（Well-known PORT），一般分配给特定应用程序，所以应当分配此范围之外的值。另外，虽然端口号不能重复，但TCP套接字和UDP套接字不会共用的端口号，诉讼一允许重复。例如：如果某TCP套接字使用9190号端口，则其它TCP套接字就无法使用该端口号，但UDP套接字可以使用。
 
 #### 3.2 地址信息的表示
 
-:small_orange_diamond:表示IPv4地址的结构体
+表示IPv4地址的结构体
 
 ##### sturct sockaddr_in
 
@@ -1126,7 +1126,7 @@ struct sockaddr_in
 ```c
 struct in_addr
 {
-    In_addr_t s_addr; // 32位IPv4地址
+    in_addr_t s_addr; // 32位IPv4地址
 }
 ```
 
@@ -1228,3 +1228,141 @@ int inet_aton(const char *string, struct in_addr *addr);
 // string：含有需要转换的IP地址信息和字符串地址值
 // addr：将保存转换结果的in_addr结构体变量的地址值
 ```
+实际编程中使用`inet_addr`函数时，需将转换后的IP地址信息代入`sockaddr_in`结构体中声明的`in_addr`结构体变量。而`inet_aton`函数不需要。原因在于，若传递`in_addr`结构体变量地址值。函数会自动把结果填入该结构体变量。
+`inet_ntoa`与`inet_aton`的作用相反，此函数可以把网络字节序整数型IP地址转换成我们熟悉的字符串形式。
+``` c
+#include <arpa/inet.h>
+
+char *inet_ntoa(struct in_addr adr);
+```
+该函数将通过参数传入的整数型IP地址转换位字符串格式并返回。但调用时需小心，返回值类型为char指针。返回字符串地址意味着已保存到内存空间，但该函数未向成需要要求分配内存，而是在内部申请了内存并保存了字符串。调用完该函数后，应立即将字符串信息复制到其他内存空间。因为，若再次调用`inet_ntoa`函数，则有可能覆盖之前保存到字符串信息。总之，再次调用`inet_ntoa`函数前返回的字符串地址值是有效的。若需要长期保存，则应将字符串复制到其他内存空间。
+
+**网络地址初始化**
+套接字创建过程中常见的网络地址信息初始化方法：
+``` c
+struct sockaddr_in addr; 
+char *serv_ip = "211.217.168.13"; // 声明IP地址字符串
+char *serv_port  = "9190";        // 声明端口号字符串
+memset(&addr, 0, sizeof(addr));   // 结构体变量addr的所有成员初始化为0
+addr.sin_family = AF_INET;        // 指定地址族
+addr.sin_addr.s_addr = inet_addr(serv_ip); // 基于字符串的IP地址初始化
+addr.sin_port = htos(atoi(serv_port));     // 基于字符串的端口号初始化
+```
+上述代码中，`memset`函数将每个字节初始化为同一值：第一个参数为结构体变量`addr`的地址值，即初始化对象`addr`；第二个参数为0，因此初始化为0；最后一个参数中传入`addr`的长度，因此`addr`的所有字节均初始化为0.这么做是为了将`sockaddr_in`结构体的成员`sin_zero`初始化为0.另外，最后一行代码调用的`atoi`函数把字符串类型转换成整数型。
+代码中对IP地址和端口号进行了硬编码，一旦运行环境改变就得改变代码，这并不明智。
+**客户端地址信息初始化**
+服务端声明`sockaddr_in`结构体变量，将其初始化为赋予服务器端IP和套接字的端口号，然后调用`bind`函数；而客户端则声明`sockaddr_in`结构体，并初始化为要与之链接的服务器端套接字的IP和端口号，然后i盗用`connect`函数。
+##### INADDR_ANY
+每次创建服务器端套接字都要输入IP地址会有些繁琐，此时可如下初始化地址信息。
+``` c
+struct sockaddr_in addr; 
+char *serv_port  = "9190";
+memset(&addr, 0, sizeof(addr));
+addr.sin_family = AF_INET;
+addr.sin_addr.s_addr = inet_addrINADDR_ANY);
+addr.sin_port = htos(atoi(serv_port));
+```
+与之前方式最大的区别在于，利用常数`INADDR_ANY`分配服务器端的IP地址。若采用这种方式，则可自动获取运行服务器端的计算机IP地址，不必亲自输入。而且，若同一计算机中已分配多个IP地址（多宿主（Multi-homed）计算机，一般路由器属于这一类），则只要端口号一致，就可以从不同IP地址接受数据。因此，服务器端中优先考虑这种方式。而客户端中除非带有一部分服务器端功能，否则不会采用。
+**向套接字分配网络地址**
+接下来把初始化的地址信息分配给套接字。`bind`函数负责这项操作。
+``` c
+#include <sys/socket.h>
+
+int bind(int sockfd, struct sockaddr *myaddr, socklen_t addrlen);
+// 成功时返回0，失败时返回1
+// sockfd 要分配地址信息（IP地址和端口号）的套接字文件描述符
+// myaddr 存有地址信息的结构体变量地址值
+// addrlen 第二个结构体变量的长度
+```
+如果此函数调用成功，则将第二个参数指定的地址信息分配给第一个参数中的相应套接字。下面给出服务器端常见套接字初始化过程。
+``` c
+int serv_sock;
+struct sockaddr_in serv_addr;
+char *serv_port = "9190";
+
+/* 创建服务器端套接字（监听套接字）*/
+serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+/* 地址信息初始化 */
+memset(&serv_addr, 0, sizeof(serv_addr));
+serv_addr.sin_family = AF_INET;
+serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+serv_addr.sin_port = htons(atoi(serv_port));
+
+/* 分配地址信息 */
+bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+......
+```
+服务端的结构默认如上，当然还有未显示的异常处理代码。
+#### 3.5 基于Windows的实现
+**在Windows环境下向套接字分配网络地址**
+Windows中向套接字分配网络地址的过程与Linux中完全相同，因为bind函数的含义、参数及返回类型完全一致。
+``` c
+SOCKET servSock;
+struct sockaddr_in servAddr;
+char *servPort = "9190";
+
+/* 创建服务器端套接字 */
+servSock = socket(PF_INET, SOCK_STREAM, 0);
+
+/* 地址信息初始化 */
+memset(&servAddr, 0, sizeof(servAddr));
+servAddr.sin_family = AF_INET;
+servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+servAddr.sin_port = htons(atoi(serv_port));
+
+/* 分配地址信息 */
+bind(servSock, (struct sockaddr*)&servAddr, sizeof(servAddr));
+......
+```
+#### WSAStringToAddress & WSAAddressToString
+下面介绍Winsock2中增加的2个转换函数。它们在功能上与`inet_addr`和`inet_ntoa`完全相同，但优点在与支持多种协议，在IPv4和IPv6中均可适用。缺点就是这两个函数无法在Windows和Linux中切换，仅用于Windows。
+##### WSAStringToAddress
+``` c
+#include <winsock2.h>
+
+INT WSAStringToAddress (LPSTR AddressString, INT AddressFamily, LPWSAPROTOCOL_INFO lpProtocolInfo, LPSOCKADDR lpAddress, LPINT lpAddressLength);
+// 成功时返回0，失败时返回SOCKET_ERROR。
+// AddressString   含有IP和端口号的字符串地址值。
+// AddressFamily   第一个参数中地址所属的地址族信息。
+// lpProtocolInfo  设置协议提供者（Provider），默认为NULL。
+// lpAddressLength 第四个参数中传递的结构体长度所在的变量地址值。
+```
+##### WSAAddressToString
+``` c
+#include <winsock2.h>
+
+INT WSAAddressToString(LPSOCKADDR lpsaAddress, DWORD dwAddressLength, LPWSAPROTOCOL_INFO lpProtocolInfo, LPSTR lpszAddressString, LPDWORD lpdwAddressStringLength);
+// 成功时返回0，失败时返回SOCKET_ERROR。
+// lpsaAddress             需要转换的地址信息结构体变量地址值。
+// dwAddressLength         第一个参数中结构体的长度。
+// lpProtocolInfo          设置协议提供者（Provider），默认为NULL。
+// lpszAddressString       保存转换结果的字符串地址值。
+// lpdwAddressStringLength 第四个参数中存有地址信息的字符串长度
+```
+#### 3.6 习题
+(1) IP地址族IPv4和IPv6有何区别？在何种背景下诞生了IPv6？
+IPv4的地址长度为4字节，IPv6为16字节。
+IPv6是为了应对2010年前后IP地址好景的问题而提出的标准。
+(2) 通过IPv4网络ID、主机ID及路由器的关系说明向公司局域网中的计算机传输数据的过程。
+- ​**网络ID**用于确定数据包应该发送到哪个网络。
+- ​**主机ID**用于确定数据包应该发送到网络中的哪台设备。
+- ​**路由器**用于在不同网络之间转发数据包，确保数据能够跨越多个网络到达目标设备。
+假设有两台计算机，计算机A（IP地址为192.168.1.10）要向计算机B（IP地址为192.168.1.20）发送数据。
+1. 计算机A首先通过子网掩码计算目标IP地址的网络ID，确认目标设备与自己在一个网络中，然后封装数据包，其中包含源IP地址和目标IP地址。
+2. 计算机A通过ARP广播请求，询问IP地址为192.168.1.20的设备的MAC地址。
+3. 计算机B收到ARP请求后，将自己的MAC地址发送给计算机A。
+4. 计算机A将数据包封装成以太网帧，目标MAC地址为计算机B的MAC地址，然后通过路由器将数据包发送到计算机B。
+
+(3) 套接字地址分为IP地址和端口号。为什么需要IP地址和端口号？或者说，通过IP可以区分哪些对象？通过端口号可以区分哪些对象？
+IP地址是网络层的逻辑地址，用于唯一标识网络中的设备。通过IP地址可以区分网络中的设备，同时IP地址中的网络ID部分用于区分不同的网络。
+端口号是传输层的逻辑标识符，用于标识设备上的具体应用程序或服务。通过端口号可以区分同一设备上的不同应用程序，同时还可以区分多线程或多进程的应用程序中的不同的连接。
+总结如下：
+- IP地址：用于找到目标设备。
+- 端口号：用于找到目标设备上的具体应用程序。
+(4) 请说明IP地址的分类方法，并据此说出下面这些IP地址的分类。
+1. A类地址：10.0.0.0 - 10.255.255.255
+
+- 214.121.212.102 （）
+- 120.101.122.89   （）
+- 129.78.102.211   （）
