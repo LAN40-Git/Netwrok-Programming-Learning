@@ -1,4 +1,6 @@
 {
   "attachmentFolderPath": "./assets",
-  "spellcheck": false
+  "spellcheck": false,
+  "useMarkdownLinks": true,
+  "newLinkFormat": "relative"
 }
