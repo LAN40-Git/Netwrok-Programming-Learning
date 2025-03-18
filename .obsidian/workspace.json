@@ -22,6 +22,27 @@
             }
           }
         ]
+      },
+      {
+        "id": "5ecb6a5156653578",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "382968d08020183b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "TCP&IP网络编程笔记 的大纲"
+            }
+          }
+        ]
       }
     ],
     "direction": "vertical"
@@ -171,6 +192,11 @@
   },
   "active": "fc27cf533942de69",
   "lastOpenFiles": [
+    "TCP&IP网络编程/4.3/eserver",
+    "TCP&IP网络编程/4.3/eclient",
+    "TCP&IP网络编程/4.3/echo_server.c",
+    "TCP&IP网络编程/4.3/echo_client.c",
+    "TCP&IP网络编程/4.3",
     "TCP&IP网络编程/assets/Pasted image 20250318222637.png",
     "TCP&IP网络编程/assets/Pasted image 20250318165913.png",
     "TCP&IP网络编程/assets/Pasted image 20250318162635.png",
@@ -188,11 +214,6 @@
     "TCP&IP网络编程/3.5/adrconv.exe",
     "TCP&IP网络编程/3.5/inet_adrconv_win.c",
     "TCP&IP网络编程/3.5/conv_win.exe",
-    "TCP&IP网络编程/3.5/endian_conv_win.c",
-    "TCP&IP网络编程/3.5",
-    "TCP&IP网络编程/3.4/inet_aton.c",
-    "TCP&IP网络编程/3.4/inet_aton",
-    "TCP&IP网络编程/3.4/inet_addr.c",
-    "TCP&IP网络编程/assets/Pasted image 20250314232936.png"
+    "TCP&IP网络编程/3.5/endian_conv_win.c"
   ]
 }
