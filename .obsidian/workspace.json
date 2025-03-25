@@ -1,5 +1,6 @@
 {
   "main": {
+<<<<<<< HEAD
     "id": "abb3a335b3ca5601",
     "type": "split",
     "children": [
@@ -9,15 +10,23 @@
         "children": [
           {
             "id": "1f9d431828cabbfa",
+=======
+    "id": "ccba23113fc64060",
+    "type": "split",
+    "children": [
+      {
+        "id": "dd3f82c089bfb2dd",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b496f8d1641629a2",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
+<<<<<<< HEAD
               "title": "TCP&IP网络编程笔记"
             }
           }
@@ -40,6 +49,9 @@
               },
               "icon": "lucide-list",
               "title": "TCP&IP网络编程笔记 的大纲"
+=======
+              "title": "新标签页"
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             }
           }
         ]
@@ -48,6 +60,7 @@
     "direction": "vertical"
   },
   "left": {
+<<<<<<< HEAD
     "id": "9d0e87776d81e61e",
     "type": "split",
     "children": [
@@ -57,6 +70,17 @@
         "children": [
           {
             "id": "5116ef812a5b1f9e",
+=======
+    "id": "56fa03a25396c1ab",
+    "type": "split",
+    "children": [
+      {
+        "id": "ca6a0e488e4246c0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "30eccd9885b865cb",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -69,7 +93,11 @@
             }
           },
           {
+<<<<<<< HEAD
             "id": "91caed0c76ccfc2f",
+=======
+            "id": "3fa0fb910160a9b2",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "search",
@@ -86,7 +114,11 @@
             }
           },
           {
+<<<<<<< HEAD
             "id": "419f19a49b93353c",
+=======
+            "id": "2494a437a1b6bd42",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -99,6 +131,7 @@
       }
     ],
     "direction": "horizontal",
+<<<<<<< HEAD
     "width": 300,
     "collapsed": true
   },
@@ -112,11 +145,24 @@
         "children": [
           {
             "id": "182731dd6558edce",
+=======
+    "width": 300
+  },
+  "right": {
+    "id": "2bd4f0df5abb70ba",
+    "type": "split",
+    "children": [
+      {
+        "id": "ded96f10182cc290",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a0f7e689348062d9",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -126,25 +172,32 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "TCP&IP网络编程笔记 的反向链接列表"
+              "title": "反向链接"
             }
           },
           {
+<<<<<<< HEAD
             "id": "70b13c1534b5f7fa",
+=======
+            "id": "1897f7dc0650458a",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "TCP&IP网络编程笔记 的出链列表"
+              "title": "出链"
             }
           },
           {
+<<<<<<< HEAD
             "id": "1409c60cebd0e90e",
+=======
+            "id": "d8af5a499c5063ec",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -159,18 +212,21 @@
             }
           },
           {
+<<<<<<< HEAD
             "id": "e2164f83da5fcb77",
+=======
+            "id": "9d3b3420fe09d08a",
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "TCP&IP网络编程笔记 的大纲"
+              "title": "大纲"
             }
           }
         ]
@@ -190,9 +246,14 @@
       "command-palette:打开命令面板": false
     }
   },
+<<<<<<< HEAD
   "active": "1f9d431828cabbfa",
   "lastOpenFiles": [
     "TCP&IP网络编程/assets/Pasted image 20250325120954.png",
     "TCP&IP网络编程/assets/Pasted image 20250325105642.png"
   ]
+=======
+  "active": "b496f8d1641629a2",
+  "lastOpenFiles": []
+>>>>>>> c01a39492c5c86b8e14a4b556c797c953b90a3eb
 }
