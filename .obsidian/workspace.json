@@ -1,14 +1,14 @@
 {
   "main": {
-    "id": "d4d4f7dbcb709f76",
+    "id": "abb3a335b3ca5601",
     "type": "split",
     "children": [
       {
-        "id": "2a386c0adfa85b83",
+        "id": "1bc0553a07cb5fb3",
         "type": "tabs",
         "children": [
           {
-            "id": "fc27cf533942de69",
+            "id": "1f9d431828cabbfa",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -24,11 +24,11 @@
         ]
       },
       {
-        "id": "3ff8379ad422c999",
+        "id": "856e58c3f5fa7627",
         "type": "tabs",
         "children": [
           {
-            "id": "ddac60fa316dfae6",
+            "id": "0d1fcec8468f73c7",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -48,15 +48,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "b9c35ffa874a4778",
+    "id": "9d0e87776d81e61e",
     "type": "split",
     "children": [
       {
-        "id": "2dc991f4b4698eca",
+        "id": "558a9fb20474485f",
         "type": "tabs",
         "children": [
           {
-            "id": "1bf71700dde8e477",
+            "id": "5116ef812a5b1f9e",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -69,7 +69,7 @@
             }
           },
           {
-            "id": "e1259df9d95a3ebc",
+            "id": "91caed0c76ccfc2f",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -86,7 +86,7 @@
             }
           },
           {
-            "id": "93528cf90ead7391",
+            "id": "419f19a49b93353c",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -99,19 +99,19 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
+    "width": 300,
     "collapsed": true
   },
   "right": {
-    "id": "3dba133cb7931601",
+    "id": "de49f58db9c70470",
     "type": "split",
     "children": [
       {
-        "id": "80d679a67d9466b6",
+        "id": "2e619f941fffe994",
         "type": "tabs",
         "children": [
           {
-            "id": "936bdef8c357d441",
+            "id": "182731dd6558edce",
             "type": "leaf",
             "state": {
               "type": "backlink",
@@ -130,7 +130,7 @@
             }
           },
           {
-            "id": "b0b56849af7e708e",
+            "id": "70b13c1534b5f7fa",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
@@ -144,7 +144,7 @@
             }
           },
           {
-            "id": "eefea444562c1d52",
+            "id": "1409c60cebd0e90e",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -159,7 +159,7 @@
             }
           },
           {
-            "id": "7eef7c80a4fb8434",
+            "id": "e2164f83da5fcb77",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -190,47 +190,9 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "fc27cf533942de69",
+  "active": "1f9d431828cabbfa",
   "lastOpenFiles": [
-<<<<<<< HEAD
-    "TCP&IP网络编程/6.4/uecho_client_win.c",
-    "TCP&IP网络编程/6.4/uecho_server_win.c",
-    "TCP&IP网络编程/6.4",
-    "TCP&IP网络编程/6.3/bound_host2.c",
-    "TCP&IP网络编程/6.3/bound_host1.c",
-    "TCP&IP网络编程/6.3/bhost2",
-    "TCP&IP网络编程/6.3/bhost1",
-    "TCP&IP网络编程/6.3",
-    "TCP&IP网络编程/6.2/uecho_server.c",
-    "TCP&IP网络编程/6.2/uecho_client.c",
-    "TCP&IP网络编程/6.2/uechoserver",
-=======
-    "TCP&IP网络编程/6.5",
-    "TCP&IP网络编程/5.3/op_server_win.c",
-    "TCP&IP网络编程/5.3/op_client_win.c",
-    "TCP&IP网络编程/5.3",
-    "TCP&IP网络编程/4.4/eClientWin.exe",
-    "TCP&IP网络编程/4.4/eServerWin.exe",
-    "TCP&IP网络编程/4.4/a.exe",
-    "TCP&IP网络编程/4.4/echo_client_win.c",
-    "TCP&IP网络编程/4.4/echo_server_win.c",
-    "TCP&IP网络编程/4.4",
->>>>>>> 0a74fbc89cb1bc50b02e8706c69a39c7f0f8e261
-    "TCP&IP网络编程/assets/Pasted image 20250321003155.png",
-    "TCP&IP网络编程/assets/Pasted image 20250321002035.png",
-    "TCP&IP网络编程/assets/Pasted image 20250321001252.png",
-    "TCP&IP网络编程/assets/Pasted image 20250320231720.png",
-    "TCP&IP网络编程/assets/Pasted image 20250320230116.png",
-    "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-<<<<<<< HEAD
-=======
-    "TCP&IP网络编程/4.4/op_client.c",
->>>>>>> 0a74fbc89cb1bc50b02e8706c69a39c7f0f8e261
-    "TCP&IP网络编程/assets/Pasted image 20250318222637.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318165913.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318162635.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318161934.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318153730.png",
-    "README.md"
+    "TCP&IP网络编程/assets/Pasted image 20250325120954.png",
+    "TCP&IP网络编程/assets/Pasted image 20250325105642.png"
   ]
 }

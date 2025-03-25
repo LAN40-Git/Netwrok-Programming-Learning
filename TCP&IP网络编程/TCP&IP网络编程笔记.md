@@ -1622,4 +1622,73 @@ TCP套接字的结束过程也非常优雅。如果对方还有数据需要传�
 
 ### 第6章 基于UDP的服务器端/客户端
 
-**UDP套接字的特点**
+### 第7章 优雅地断开套接字连接
+
+### 第8章 域名及网络地址
+
+#### 8.1 域名系统
+
+**什么是域名**
+类似与www.baidu.com的这类虚拟地址，可以转换为IP地址。
+
+**DNS服务器**
+DNS服务器记录着域名对应的IP地址信息，计算机解析域名时需要询问相关的DNS服务器，若询问的DNS服务器无法解析，则会询问其他DNS服务器，如图8-1所示。
+![](assets/Pasted%20image%2020250325105642.png)
+<center>图8-1 DNS和请求获取IP地址信息</center>
+
+从图中可以看出，默认DNS服务器收到自己无法解析的请求时，向上级DNS服务器询问。通过这种方式逐级向上传递
+信息 ，到达顶级DNS服务器一一根DNS服务器时，它知道该向哪个DNS服务器询问 。向下级DNS传递解析请求，得到UIP地址后原路返回，最后将解析的IP地址.传递到发起请求的主机 。DNS就是这样层次化管理的一种分布式数据库系统 。
+
+#### 8.2 IP地址和域名之间的转换
+
+**程序中有必要使用域名吗**
+由于IP地址频繁多变，而域名一旦确认变可能永久不变，因此最好使用域名。
+
+**利用域名获取IP地址**
+##### gethostbyname()
+
+``` c
+#include <netdb.h>
+
+struct hostent * gethostbyname(const char *hostname);
+// 成功时返回hostent结构体地址，失败时返回NULL指针
+```
+传递域名字符串，就能够得到域名对应的IP地址。返回时，地址信息装入`hostent`结构体。
+##### struct hostent
+``` c
+struct hostent
+{
+	char * h_name;      // official name
+	char ** h_aliases   // alias list
+	int h_addrtype      // host address type
+	int h_length        // address length
+	char ** h_addr_list // address list
+}
+```
+从上述结构体定义中可以看出，不止返回IP信息，同时还连带着其他信息。
+- h_name
+	- 该变量中存有官方域名（Official domain name）。官方域名代表某一主页，但实际上，一些著名公司的域名并未用官方域名注册。
+- h_aliases
+	- 可以通过多个域名访问同一主页。同一IP可以绑定多个域名，因此，除官方域名外还可指定其他域名。这些信息可以通过h_aliases获得。
+- h_addrtype
+	- gethostbyname函数不仅支持IPv4，还支持IPv6。因此可以通过此变量获取保存在h_addr_list的IP地址的地址族信息。若是IPv4，则此变量存有AF_INET。
+- h_length
+	- 保存IP地址长度。若是IPv4地址，因为是4个字节，则保存4；IPv6时，因为是16个字节，故保存16。
+- h_addr_list
+	- 这是最重要的成员。通过此变量以整数形式保存域名对应的IP地址。若域名由多个对应的IP地址，同样可以通过此变量获取。
+
+调用gethostbyname函数返回的hostent结构体的变量结构如图8-2所示，该图在实际编程中非常有用。
+![](assets/Pasted%20image%2020250325120954.png)
+<center>图8-2 hostent结构体变量</center>
+
+**利用IP地址获取域名**
+##### gethostbyaddr()
+```c
+#include <netdb.h>
+struct hostent * gethostbyaddr (const char * addr, socklen_t len, int family);
+// 成功时返回hostent结构体变量地址值，失败时返回NULL指针。
+// addr：含有IP地址信息的in_addr结构体指针，为了同时传递IPv4地址之外的其他信息，该变量的类型声明为char指针。
+// len：向第一个参数传递的地址信息的字节数，IPv4时为4，IPv6时为16。
+// 传递地址族信息， IPv4时为AF_INET，IPv6时为AF_INET6。
+```
+
