@@ -1,45 +1,20 @@
 {
   "main": {
-    "id": "d4d4f7dbcb709f76",
+    "id": "ccba23113fc64060",
     "type": "split",
     "children": [
       {
-        "id": "2a386c0adfa85b83",
+        "id": "dd3f82c089bfb2dd",
         "type": "tabs",
         "children": [
           {
-            "id": "fc27cf533942de69",
+            "id": "b496f8d1641629a2",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "TCP&IP网络编程笔记"
-            }
-          }
-        ]
-      },
-      {
-        "id": "3ff8379ad422c999",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "ddac60fa316dfae6",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "TCP&IP网络编程笔记 的大纲"
+              "title": "新标签页"
             }
           }
         ]
@@ -48,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "b9c35ffa874a4778",
+    "id": "56fa03a25396c1ab",
     "type": "split",
     "children": [
       {
-        "id": "2dc991f4b4698eca",
+        "id": "ca6a0e488e4246c0",
         "type": "tabs",
         "children": [
           {
-            "id": "1bf71700dde8e477",
+            "id": "30eccd9885b865cb",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -69,7 +44,7 @@
             }
           },
           {
-            "id": "e1259df9d95a3ebc",
+            "id": "3fa0fb910160a9b2",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -86,7 +61,7 @@
             }
           },
           {
-            "id": "93528cf90ead7391",
+            "id": "2494a437a1b6bd42",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -99,24 +74,22 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 300
   },
   "right": {
-    "id": "3dba133cb7931601",
+    "id": "2bd4f0df5abb70ba",
     "type": "split",
     "children": [
       {
-        "id": "80d679a67d9466b6",
+        "id": "ded96f10182cc290",
         "type": "tabs",
         "children": [
           {
-            "id": "936bdef8c357d441",
+            "id": "a0f7e689348062d9",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -126,25 +99,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "TCP&IP网络编程笔记 的反向链接列表"
+              "title": "反向链接"
             }
           },
           {
-            "id": "b0b56849af7e708e",
+            "id": "1897f7dc0650458a",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "TCP&IP网络编程笔记 的出链列表"
+              "title": "出链"
             }
           },
           {
-            "id": "eefea444562c1d52",
+            "id": "d8af5a499c5063ec",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -159,18 +131,17 @@
             }
           },
           {
-            "id": "7eef7c80a4fb8434",
+            "id": "9d3b3420fe09d08a",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "TCP&IP网络编程笔记 的大纲"
+              "title": "大纲"
             }
           }
         ]
@@ -190,47 +161,6 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "fc27cf533942de69",
-  "lastOpenFiles": [
-<<<<<<< HEAD
-    "TCP&IP网络编程/6.4/uecho_client_win.c",
-    "TCP&IP网络编程/6.4/uecho_server_win.c",
-    "TCP&IP网络编程/6.4",
-    "TCP&IP网络编程/6.3/bound_host2.c",
-    "TCP&IP网络编程/6.3/bound_host1.c",
-    "TCP&IP网络编程/6.3/bhost2",
-    "TCP&IP网络编程/6.3/bhost1",
-    "TCP&IP网络编程/6.3",
-    "TCP&IP网络编程/6.2/uecho_server.c",
-    "TCP&IP网络编程/6.2/uecho_client.c",
-    "TCP&IP网络编程/6.2/uechoserver",
-=======
-    "TCP&IP网络编程/6.5",
-    "TCP&IP网络编程/5.3/op_server_win.c",
-    "TCP&IP网络编程/5.3/op_client_win.c",
-    "TCP&IP网络编程/5.3",
-    "TCP&IP网络编程/4.4/eClientWin.exe",
-    "TCP&IP网络编程/4.4/eServerWin.exe",
-    "TCP&IP网络编程/4.4/a.exe",
-    "TCP&IP网络编程/4.4/echo_client_win.c",
-    "TCP&IP网络编程/4.4/echo_server_win.c",
-    "TCP&IP网络编程/4.4",
->>>>>>> 0a74fbc89cb1bc50b02e8706c69a39c7f0f8e261
-    "TCP&IP网络编程/assets/Pasted image 20250321003155.png",
-    "TCP&IP网络编程/assets/Pasted image 20250321002035.png",
-    "TCP&IP网络编程/assets/Pasted image 20250321001252.png",
-    "TCP&IP网络编程/assets/Pasted image 20250320231720.png",
-    "TCP&IP网络编程/assets/Pasted image 20250320230116.png",
-    "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-<<<<<<< HEAD
-=======
-    "TCP&IP网络编程/4.4/op_client.c",
->>>>>>> 0a74fbc89cb1bc50b02e8706c69a39c7f0f8e261
-    "TCP&IP网络编程/assets/Pasted image 20250318222637.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318165913.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318162635.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318161934.png",
-    "TCP&IP网络编程/assets/Pasted image 20250318153730.png",
-    "README.md"
-  ]
+  "active": "b496f8d1641629a2",
+  "lastOpenFiles": []
 }
