@@ -1692,3 +1692,121 @@ struct hostent * gethostbyaddr (const char * addr, socklen_t len, int family);
 // 传递地址族信息， IPv4时为AF_INET，IPv6时为AF_INET6。
 ```
 
+
+### 第9章 套接字的多种可选项
+
+#### 9.1 套接字可选项和I/O缓冲大小
+
+##### getsockopt()
+读取套接字可选项。
+``` c
+#include <sys/socket.h>
+
+int getsockopt(int sock, int level, int optname, void *optval, socklen_t *optlen);
+// 成功时返回0，失败时返回-1
+// sock 用于查看选项套接字文件描述符
+// level 要查看的可选项的协议层
+// optname 要查看的可选项名
+// optval 保存查看结果的缓冲地址值
+// optlen 向第四个参数optval传递的缓冲大小。调用函数后，该变量中保存通过第四个参数返回的可选项信息的字节数
+```
+
+##### setsockopt()
+设置套接字可选项。
+``` c
+#include <sys/socket.h>
+
+int setsockopt(int sock, int level, int optname, const void *optval, socklen_t optlen);
+// 成功时返回0，失败时返回-1
+// sock 用于更改可选项的套接字文件描述符
+// level 要更改的可选项协议层
+// optname 要更改的可选项名
+// optval 保存要更改的选项信息的缓冲地址值
+// optlen 向第四个参数optval传递的可选项信息的字节数
+```
+
+##### SO_SNDBUF & SO_RCVBUF
+SO_RCVBUF是输入缓冲大小相关可选项，SO_SNDBUF是输出缓冲大小相关可选项。用这2个可选项可以读取当前I/O缓冲大小，也可以进行更改。
+
+#### 9.2 SO_REUSEADDR
+SO_REUSEADDR及其相关的Time-wait状态很重要。
+
+**Time-wait状态**
+![](assets/Pasted%20image%2020250326212954.png)
+<center>图9-1 Time-wait状态下的套接字</center>
+
+假设图9-1中主机A是服务器端，因为是主机A向B发送FIN消息，故可以想象成服务器端在控制台输入CTRL+C。但是，套接字经过四次握手过程后并非立即消除，而是要经过一段时间的TIme-wait状态。当然，只有先断开连接的（先发送FIN消息的）主机才经过Time-wait状态。因此，若服务器端先断开连接，则无法立即重新运行。套接字处在Time-wait过程时，相应端口是正在使用的状态。因此，就像之前验证过的，bind函数调用过程中当然会发生错误。
+为什么会有Time-wait状态呢？图9-1中假设主机A向主机B传输ACK消息（SEQ 5001、ACK 7502）后立即消除套接字。但最后这条ACK消息在传递途中丢失，未能传给主机B。这时会发生什么？主机B会认为之前自己发送的FIN消息（SEQ 7501、ACK 5001）未能抵达主机A，继而试图重传。但此时主机A已经是完全终止的状态，因此主机B永远无法收到从主机A最后传来的ACK消息。相反，若主机A的套接字处在Time-wait状态，则会向主机B重传最后的ACK消息，主机B也可以正常终止。基于这些考虑，先传输FIN消息的主机应经过Time-wait过程。
+
+**地址再分配**
+Time-wait在有时候并不必要，甚至可能是阻碍（比如想要重启服务时由于处于Time-wait状态而必须等待几分钟，而若后发送FIN消息的主机未收到四次握手的最后一次握手消息，则会重发FIN消息，这可能会使Time-wait状态延迟），因此必要时可以禁用。
+SO_REUSEADDR的默认值为0，这意味着无法分配Time-wait状态下的套接字端口号。将SO_REUSEADDR设置为1即可。
+
+#### 9.3 TCP_NODELAY
+
+**Negle算法**
+Negle算法是为了防止数据包过多而发生网络过载而诞生。其使用与否会导致如图9-3所示差异。
+![](assets/Pasted%20image%2020250326214444.png)
+<center>图9-3 Nagle算法</center>
+
+>只有收到前一数据的ACK消息是，Nagle算法才发送下一数据。
+
+TCP套接字默认使用Nagle算法交换数据，因此最大限度地进行缓冲（即在ACK消息到达之前，一直将消息填入输出缓冲），直到收到ACK。
+但Nagle算法并不是什么时候都适用。根据传输数据的特性，网络流量未受太大影响时，不使用Nagle算法要比使用它时传输速度快。
+
+**禁用Nagle算法**
+如果有必要，就应禁用Nagle算法。只需将套接字可选项TCP_NODELAY改为1即可。
+
+### 第10章 多进程服务器端
+#### 10.1 进程概念及应用
+
+**理解进程（Process）**
+进程就是占用内存空间的正在运行的程序。
+
+**进程 ID**
+无论进程是如何创建的，所有进程都会从操作系统分配到ID。此ID称为“进程ID”，其值为大于2的整数。1要分配给操作系统启动后的（用于协助操作系统）首个进程，因此用户进程无法得到ID值1。
+
+**通过调用fork函数创建进程**
+创建进程的方法很多，此处只介绍用于创建多进程服务器端的fork函数。
+```c
+#include <unistd.h>
+
+pid_t fork(void);
+// 成功时返回进程ID，失败时返回-1
+```
+fork函数将创建调用的进程的副本。也就是说，并非根据完全不同的程序创建进程，而是复制正在运行的、调用fork函数的进程。另外，两个进程都将执行fork函数调用后的语句（准确地说是在fork函数返回后）。但因为通过同一个进程、复制相同的内存空间，之后的程序流要根据fork函数的返回值加以区分。即利用fork函数的如下特点区分成迅速执行流程。
+- 父进程：fork函数返回子进程ID
+- 子进程：fork函数返回0
+此处“父进程”指原进程，即调用fork函数的主体，而“子进程”是通过父进程调用fork函数复制出的进程。接下来讲解调用fork函数后的程序运行流程，如图10-1所示。
+![](assets/Pasted%20image%2020250326230220.png)
+<center>图10-1 fork函数的调用</center>
+
+由图可知父进程在复制出子进程之前，将全局变量gval增加到11，将局部变量lval增加到25。之后父进程将对gval进行加1，但不会影响子进程gval的值，而子进程会执行fork()函数之后的语句，即对lval进行加1。
+
+#### 10.2 进程和僵尸进程
+
+**僵尸进程**
+进程完成工作后（执行完main函数中的程序后）应被销毁，但有时这些进程将变成僵尸进程， 占用系统中的重要资源。这种状态下的进程称作“僵尸进程”。
+
+**产生僵尸进程的原因**
+创建子进程的父进程未收到子进程的结束状态值。
+
+**销毁僵尸进程1：利用wait函数**
+```c
+#include <sys/wait.h>
+
+pid_t wait(int * statloc);
+// 成功时返回终止的子进程ID，失败时返回-1
+```
+调用此函数时如果已由子进程终止，那么子进程终止时传递的返回值（exit函数的参数值、main函数的return返回值）将保存到该函数的参数所指内存空间。但函数参数只想的单元还包含其他信息，因此需要通过下列宏进行分离。
+- WIFEXITED     ：子进程正常终止时返回“真”（true）
+- WEXITSTATUS：返回子进程的返回值
+也就是说，向wait函数传递变量status的地址时，调用wait函数后应编写如下代码。
+```c
+if(WIFEXITED(status)) // 是正常终止的吗？
+{
+	puts("Normal termination!");
+	printf("Child pass num: %d. WEXITSTATUS(status)"); // 那么返回值是多少？
+}
+```
+
