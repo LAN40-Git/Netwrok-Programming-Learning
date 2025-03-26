@@ -190,6 +190,13 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "82879918d9d15e40",
-  "lastOpenFiles": []
+  "active": "686bc4cf02489903",
+  "lastOpenFiles": [
+    "TCP&IP网络编程/10.2/zombie.c",
+    "TCP&IP网络编程/10.2/zombie",
+    "TCP&IP网络编程/10.2",
+    "TCP&IP网络编程/10.1/fork.c",
+    "TCP&IP网络编程/10.1/fork",
+    "TCP&IP网络编程/10.1"
+  ]
 }
