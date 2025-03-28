@@ -147,7 +147,6 @@
  - 如果队列已满，新的连接请求会被拒绝。
 ---
 ##### accept()
-
  **函数原型**
 
  ```c
@@ -1810,3 +1809,48 @@ if(WIFEXITED(status)) // 是正常终止的吗？
 }
 ```
 
+**销毁僵尸进程2：使用waitpid函数**
+wait函数会引起程序阻塞，还可以考虑用waitpid函数。这是防止僵尸进程的第二种方法，也是防止阻塞的方法。
+```c
+#include <sys/wait.h>
+
+pid_t waitpid(pid_t pid, int *statloc, int options);
+// 成功时返回终止的子进程ID（或0），失败时返回-1
+// pid 等待终止的目标子进程的ID，若传递-1，则与wait函数相同，可以等待任意子进程终
+// statloc 与wait函数的statloc参数具有相同含义
+// options 传递头文件sys/wait.h中声明的常量WNOHANG，即使没有终止的子进程也不会进入阻塞状态，而是返回0并退出函数
+```
+
+#### 10.3 信号处理 
+
+**信号与signal函数**
+```c
+#include <signal.h>
+
+void (*signal(int signo, void (*func)(int)))(int);
+// 为了在产生信号时调用，返回之前注册的函数指针
+```
+
+**利用sigaction函数进行信号处理**
+```c
+#include <signal.h>
+
+int sigaction(int signo, const struct sigaaction *act， struct sigaction *oldact);
+// 成功时返回0，失败时返回-1
+// signo 与signal函数相同，传递信号信息
+// act 对应于第一个参数的信号处理函数（信号处理器）信息
+// oldact 通过此函数获取之前注册的信号处理函数指针，若不需要则传递0
+```
+声明并初始化sigaction结构体变量以调用上述函数，该结构体定义如下。
+```c
+struct sigaction
+{
+	void(*sa_handler)(int);
+	sigset_t sa_mask;
+	int sa_flags;
+}
+```
+此结构体的sa_handler成员保存信号处理函数的指针值（地址值）。sa_mask和sa_flags的所有位均初始化为0即可。
+
+**利用信号处理技术消灭僵尸进程**
+子进程终止时将产生SIGCHLD信号。利用这个信号可以编写消失僵尸进程的程序。
