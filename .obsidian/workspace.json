@@ -24,11 +24,11 @@
         ]
       },
       {
-        "id": "3edb41708ea8db34",
+        "id": "d65742e18c3a3ffe",
         "type": "tabs",
         "children": [
           {
-            "id": "f4688a58bb08f8ac",
+            "id": "85624a33d21fbe2f",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -190,8 +190,9 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "f4688a58bb08f8ac",
+  "active": "686bc4cf02489903",
   "lastOpenFiles": [
+    "TCP&IP网络编程/assets/Pasted image 20250328224257.png",
     "TCP&IP网络编程/assets/Pasted image 20250326230220.png",
     "TCP&IP网络编程/assets/Pasted image 20250326214444.png",
     "TCP&IP网络编程/assets/Pasted image 20250326212954.png",
