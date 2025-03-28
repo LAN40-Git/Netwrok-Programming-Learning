@@ -24,11 +24,11 @@
         ]
       },
       {
-        "id": "374cd737d42166bf",
+        "id": "3edb41708ea8db34",
         "type": "tabs",
         "children": [
           {
-            "id": "82879918d9d15e40",
+            "id": "f4688a58bb08f8ac",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -190,7 +190,7 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "686bc4cf02489903",
+  "active": "f4688a58bb08f8ac",
   "lastOpenFiles": [
     "TCP&IP网络编程/assets/Pasted image 20250326230220.png",
     "TCP&IP网络编程/assets/Pasted image 20250326214444.png",
