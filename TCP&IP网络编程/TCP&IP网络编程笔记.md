@@ -1867,6 +1867,7 @@ struct sigaction
 图11-1表示基于管道（PIPE）的进程间通信结构模型。
 ![](assets/Pasted%20image%2020250328224257.png)
 <center>图11-1 基于管道的进程间通信模型</center>
+
 从图11-1中可以看到，为了完成进程间的通信，需要创建管道。管道并非属于进程的资源，而是和套接字一样，属于操作系统（也就不是fork函数的复制对象）。所以，两个进程通过操作系统提供的内存空间进行通信。下面是创建管道的函数。
 ```c
 #include <unistd.h>
@@ -1876,3 +1877,171 @@ int pipe(int filedes[2]);
 // filedes[0] 通过管道接收数据时使用的文件描述符，即管道出口
 // filedes[1] 通过管道传输数据时使用的文件描述符，即管道入口
 ```
+如果想要双向通信，则需要创建两个管道（否则可能会死锁或发生系统调度问题）。
+
+![](assets/Pasted%20image%2020250330231004.png)
+<center>图11-2 双向通信模型</center>
+
+### 第12章 I/O复用
+
+#### 12.1 基于I/O复用的服务器端
+
+**多进程服务器端的缺点和解决方法**
+I/O复用解决了多个客户端请求创建的进程带来的开销过大的问题。
+
+**理解复用**
+> 在1个通信频道中传递多个数据（信号）的技术。
+
+**复用技术在服务器端的应用**
+服务器端引入复用技术可以减少所需的进程数，先给出第10章的多进程服务器端模型，如图12-1所示
+![](assets/Pasted%20image%2020250331081544.png)
+<center>图12-1 多进程服务器端模型</center>
+
+图12-1的模型引入复用技术，可以减少进程数。重要的是，无论连接多少客户端，提供服务的进程只有1个。
+![](assets/Pasted%20image%2020250331081659.png)
+<center>图12-2 I/O复用服务器端模型</center>
+
+#### 12.2 理解select函数并实现服务器端
+
+**select函数的功能和调用顺序**
+使用select函数时可以将多个文件描述符集中到一起统一监视，项目如下。
+- 是否存在套接字接收数据？
+- 无需阻塞传输数据的套接字有哪些？
+- 哪些套接字发生了异常？
+上述监视称为“事件”。
+select函数的使用方法与一般函数区别较大，更准确的说，它很难使用。但为了实现I/O复用服务器端，必须掌握select函数的用法，并运用到套接字编程中。认为“select函数是I/O复用的全部内容”也并不为过。接下来介绍select函数的调用方法和顺序，如图12-5所示。
+![](assets/Pasted%20image%2020250331082447.png)
+<center>图12-3 select函数调用过程</center>
+
+图12-5给出了从调用select函数到获取结果所经过程。可以看到，调用select函数前需要一些准备工作，调用后还需查看结果。
+
+##### 设置文件描述符
+利用select函数可以同时监视多个文件描述符。当然，监视文件描述符可以视为监视套接字。此时首先需要将要监视的文件描述符集中到一起。集中时也要按照监视项（接收、传输、异常）进行区分，即按照上述3中监视项分成3类。
+使用fd_set数组变量执行此项操作，如图12-6所示。该数组是存有0和1的位数组。
+![](assets/Pasted%20image%2020250331083105.png)
+<center>图12-4 fd_set结构体</center>
+
+图12-4中最左端的位表示文件描述符0.如果将该位设置为1，则表示该文件描述符是监视对象。
+在fd_set变量中注册或更改值的操作都由下列宏完成。
+- `FD_ZERO(fd_set *fdset)`：将fd_set变量的所有位初始化为0
+- `FD_SET(int fd, fd_set *fdset)`：在参数fdset指向的变量中注册文件描述符fd的信息
+- `FD_CLR(int fd, fd_set *fdset)`：从参数fdset指向的变量中清除文件描述符fd的信息
+- `FD_ISSET(int fd, fd_set *fdset)`：若参数fdset指向的变量中包含文件描述符fd的信息，则返回“真”。
+
+通过图12-5解释这些函数的功能。
+![](assets/Pasted%20image%2020250331083828.png)
+<center>图12-5 fd_set相关函数的功能</center>
+
+##### 设置检查（监视）范围及超时
+##### select()
+```c
+#include <sys/select.h>
+#include <sys/time.h>
+
+int select(int maxfd, fd_set *readset, fd_set *writeset, fd_set *exceptset, const struct timeval *timeout);
+// 成功时返回大于0的值，失败时返回-1
+// maxfd 监视对象文件描述符数量
+// readset 将所有关注“是否存在待读取数据”的文件描述符注册到fd_set型变量，并传递其地址值
+// writeset 将所有关注“是否可传输无阻塞数据”的文件描述符注册到fd_set型变量，并传递其地址值
+// exceptset 将所有关注“是否发生异常”的文件描述符注册到fd_set型变量。并传递其地址值
+// timeout 调用select函数后，为防止陷入无限阻塞的状态，传递超时（time-out）信息
+// 返回值 发生错误时返回-1，超时时返回0.因发生关注的事件返回时，返回大于0的值，该值是发生事件的文件描述符数
+```
+如上所属，select函数用来验证3中监视项的变化情况。根据监视项声明3个fd_set型变量，分别向其注册文件描述符信息，并把变量的地址值传递到上述函数的第二到第四给参数。在调用select函数前需要决定以下两件事。
+- 文件描述符的监视（检查）范围是？
+- 如何设定select函数的超时时间？
+
+文件描述符的监视范围与select函数的第一个参数有关，其值为醉倒的文件描述符值加1
+select函数的超时时间与select函数的最后一个参数有关，其中timeval结构体定义如下。
+```c
+struct timeval
+{
+	long tv_sec;  // seconds
+	long tv_usec; // microseconds
+}
+```
+本来select函数只有在监视的文件描述符发生变化时才返回。如果未发生变化，就会进入阻塞状态。指定超时时间就是为了防止这种情况的发生。若不想设置超时，则传递NULL参数。
+
+##### 调用select函数后查看结果
+文件描述符变化是指监视的文件描述符中发生了相应的监视事件。
+select函数返回正整数时，怎样获知哪些文件描述符发生了变化？向select函数的第二到第四个参数传递的fd_set变量中将产生如图12-6所示变化。
+![](assets/Pasted%20image%2020250331090709.png)
+<center>图12-6 fd_set变量的变化</center>
+
+由图12-6可知，select函数调用完成后，向其传递的fd_set变量中将发生变化。原来为1的所有位均变为0，但发生变化的文件描述符对应位除外。因此，可以认为值仍为1的位置上的文件描述符发生了变化。
+
+#### 12.3 基于Windows的实现
+
+**在Windows平台调用select函数**
+Windows同样提供select函数，而且所有参数与Linux的select函数完全相同。只不过Windows平台select函数的第一个参数是为了保持与（包括Linux的）UNIX系列操作系统的兼容性而添加的，并没有特殊意义。
+```c
+#include <winsock2.h>
+
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excepfds, const struct timeval *timeout);
+// 成功时返回0，失败时返回-1
+```
+返回值、参数的顺序及含义与之前的Linux中的select函数完全相同，故省略。
+
+```c
+typedef struct timeval
+{
+	long tv_sec;  // seconds
+	long tv_usec; // microseconds
+} TIMEVAL;
+```
+
+```c
+typedef struct fd_set
+{
+	u_int fd_count;
+	SOCKET fd_array[FD_SETSIZE];
+} fd_set;
+```
+
+Windows的fd_set由成员fd_count和fd_array构成，fd_count用于套接字句柄数，fd_array用于保存套接字句柄。这是由于Windows的套接字句柄并非和Linux一样从0开始递增，而且句柄的整数值之间并无规律可循，因此需要直接保存句柄的数组和记录句柄数的变量。
+
+### 第13章 多种I/O函数
+
+#### 13.1 send & recv函数
+
+**Linux中的 send & recv**
+Linux平台下的send & recv函数与Windows下的并无差别。
+
+##### send()
+```c
+#include <sys/socket.h>
+
+ssize_t send(int sockfd, const void * buf, size_t nbytes, int flags);
+// 成功时返回发送的字节数，失败时返回-1
+// sockfd 表示与数据传输对象的连接的套接字文件描述符
+// buf 保存待传输数据的缓冲地址值
+// nbytes 待传输的字节数
+// flags 传输数据时指定的可选项信息
+```
+
+##### recv()
+```c
+#include <sys/socket.h>
+
+ssize_t recv(int sockfd, void *buf, size_t nbytes, int flags);
+// 成功时返回接收的字节数（收到EOF时返回0），失败时返回-1
+// sockfd 表示数据接收对象的连接的套接字文件描述符
+// buf 保存接收数据的缓冲地址值
+// nbytes 可接收的最大字节数
+// flags 接收数据时指定的可选项信息
+```
+
+send函数和recv函数的最后一个参数是收发数据时的可选项。该可选项可利用位或（bit OR）运算（|运算符）同时传递多个信息。通过表13-1整理可选项的种类及含义。
+
+<center>表13-1 send&recv函数的可选项及含义</center>
+
+| 可选项（Option）   | 含义                                        | send | recv |
+| ------------- | ----------------------------------------- | ---- | ---- |
+| MSG_OOB       | 用于传输带外数据（Out-of-band data）                | *    | *    |
+| MSG_PEEK      | 验证输入缓冲中是否存在接收的数据                          |      | *    |
+| MSG_DONTROUTE | 数据传输过程中不参照路由（Routing）表，在本地（Local）网络中寻找目的地 | *    |      |
+| MSG_DONTWAIT  | 调用I/O函数时不阻塞，用于使用非阻塞（Non-blocking）I/O      | *    | *    |
+| MSG_WAITTALL  | 防止函数返回，直到接收全部请求的字节数                       |      | *    |
+
+##### MSG_OOB：发送紧急消息
+MSG_OOB可选项用于发送“带外数据”紧急消息。与医院设立单独的急诊室以处理急诊患者类似，MSG_OOB可选项用于创建特殊发送方法和通道以发送紧急消息。
