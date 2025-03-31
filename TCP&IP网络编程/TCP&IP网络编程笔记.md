@@ -2045,3 +2045,122 @@ send函数和recv函数的最后一个参数是收发数据时的可选项。该
 
 ##### MSG_OOB：发送紧急消息
 MSG_OOB可选项用于发送“带外数据”紧急消息。与医院设立单独的急诊室以处理急诊患者类似，MSG_OOB可选项用于创建特殊发送方法和通道以发送紧急消息。
+
+**紧急模式工作原理**
+MSG_OOB的真正意义在于督促数据接收对象尽快处理数据。下面是设置MSG_OOB可选项状态下的数据传输过程，如图13-1所示
+![](assets/Pasted%20image%2020250331140909.png)
+<center>图13-1 紧急消息传输阶段的输出缓冲</center>
+图13-1给出的是示例oob_send.c中调用如下函数后的输出缓冲状态。此处假设已传输之前的数据。
+```c
+send(sock, "890", strlen("890"), MSG_BOX);
+```
+如果将缓冲最左端的位置视作偏移量为0，字符0保存于偏移量为2的位置。另外，字符0右侧偏移量为3的位置存有紧急指针（Urgent Pointer）。紧急指针指向紧急消息的下一个位置（偏移量加1），同时向对方主机传递如下信息：
+>紧急指针指向的偏移量为3之前的部分就是紧急消息！
+
+也就是说，实际只用1个字节表示紧急消息信息。这一点可以通过图13-1中用于传输数据的TCP数据包（段）的结构看得更清楚，如图13-2所示。
+![](assets/Pasted%20image%2020250331141420.png)
+<center>图13-2 设置URG的数据包</center>
+TCP数据包实际包含更多信息，但图13-2只标注了与我们主题相关的内容。TCP头中含有如下两种信息。
+- URG=1：载有紧急消息的数据包
+- URG指针：紧急指针位于偏移量为3的位置
+
+**检查输入缓冲**
+同时设置MSG_PEEK选项和MSG_DONTWAIT选项，以验证输入缓冲中是否存在接收的数据。设置MSG_PEEK选项并调用recv函数时，即使读取了输入缓冲的数据也不会删除。因此，该选项通常与MSG_DONTWAIT合作，用于调用以非阻塞方式验证待读数据存在与否的函数。
+
+#### 13.2 readv & writev函数
+
+**使用readv & writev函数**
+readv & writev函数的功能可概括如下：
+>对数据进行整合传输及发送的函数
+
+通过writev函数可以将分散保存在多个缓冲中的数据一并发送，通过readv函数可以由多个缓冲分别接收。因此，适当使用这2个函数可以减少I/O函数的调用次数。
+
+##### writev()
+```c
+#include <sys/uio.h>
+
+ssize_t writev(int filedes, const struct iovec *iov, int iovcnt);
+// 成功时返回发送的字节数，失败时返回-1
+// filedes 表示数据传输的对象的套接字文件描述符。但该函数并不只限于套接字，因此，可以像read函数一样向其传递文件或标准输出描述符
+// iov iovec结构体数组的地址值，结构体iovec中包含待发送数据的位置和大小信息
+// iovcnt 向第二个参数传递的数组长度
+```
+上述函数的第二个参数中出现的数组iovec结构体的声明如下。
+```c
+struct iovec
+{
+	void * iov_base; // 缓冲地址
+	size_t iov_len;  // 缓冲大小
+}
+```
+可以看到，结构体iovec由保存待发送数据的缓冲（char型数组）地址值和实际发送的数据长度信息构成。给出上述函数的调用示例前，先通过图13-3了解该函数的使用方法。
+![](assets/Pasted%20image%2020250331150411.png)
+<center>图13-3 write & iovec</center>
+
+图13-3中writev的第一个参数1是文件描述符，因此向控制台输出数据，ptr是存有待发送数据信息的iovec数组指针。第三个参数为2，因此，从ptr指向的地址开始，共浏览2个iovec结构体变量，发送这些指针指向的缓冲数据。接下来仔细观察途中的iovec结构体数组。`ptr[0]`（数组第一个元素）的iov_base指向以A开头的字符串，同时iov_len为3，故发送ABC。而`ptr[1]`的iov_base指向数字1，同时iov_len为4，故发送1234。
+
+##### readv()
+```c
+#include <sys/uio.h>
+
+ssize_t readv(int filedes, const struct iovec *iov, int iovcnt);
+// 成功时返回接收的字节数，失败时返回-1
+// filedes 传递接收数据的文件描述符
+// iov 包含数据保存位置的大小信息的iovec结构体数组的地址值
+// iovcnt 第二个参数中数组的长度
+```
+
+### 第14章 多播与广播
+
+#### 14.1 多播
+多播方式的数据传输是基于UDP完成的。因此，与UDP服务器端/客户端的实现方式非常接近。区别在于，UDP数据传输以单一目标进行，而多播数据同时传递到加入（注册）特定组的大量主机。换言之，采用多播方式时，可以同时向多个主机传递数据。
+
+**多播的数据传输方式及流量方面的优点**
+多播的数据传输特点可整理如下。
+- 多播服务器端针对特定多播组，只发送1次数据。
+- 即使只发送1次数据，但该组内所有客户端都会接收数据。
+- 多播组数可在IP地址范围内任意增加。
+- 加入特定组即可接收发往该多播组的数据。
+多播组是D类IP地址（224.0.0.0-239.255.255.255），“加入多播组”可以理解为如下声明：“在D类IP地址中，我希望接收发往目标239.234.218.234的多播数据。”。
+多播是基于UDP完成的，也就是说，多播数据报的格式与UDP数据包相同。只是与一般的UDP数据包不同，向网络传递1个多播数据包时，路由器将复制该数据包并传递到多个主机。像这样，多播需要借助路由器完成，如图14-1所示。
+![](assets/Pasted%20image%2020250331214900.png)
+<center>图14-1 多播路由</center>
+
+**路由（Routing）和TTL（Time to Live，生存时间）**
+为了传递多播数据包，必须设置TTL。TTL是Time to Live的简写，是决定“数据包传递距离”的主要因素。TTL用整数表示，并且每经过1个路由器就减1.TTL变为0时，该数据包无法再被传递，只能销毁。因此，TTL的值设置过大将影响网络流量。当然，设置过小也会无法传递到目标。
+![](assets/Pasted%20image%2020250331220307.png)
+<center>图14.2 TTL和多播路由</center>
+
+与设置TTL相关的协议层为IPPROTO_IP，选项名为IP_MULTICAST_TTL。因此，可以用如下代码把TTL设置为64。
+```c
+int send_sock;
+int time_live = 64;
+......
+send_sock = socket(PF_INET, SOCK_DGRAM, 0);
+setsockopt(send_sock, IPPROTO_IP, IP_MULTICAST_TTL, (void*)&time_live, sizeof(time_live));
+....
+```
+另外，加入多播组也通过设置套接字选项完成。加入多播组相关的协议层为IPPROTO_IP，选项名为IP_ADD_MEMBERSHIP。可通过如下代码加入多播组。
+```c
+int recv_sock;
+struct ip_mreq join_addr;
+....
+recv_sock = socket(PF_INET, SOCK_DGRAM, 0);
+....
+join_addr.imr_multiaddr.s_addr="多播组地址信息";
+join_addr.imr_interface,s_addr="加入多播组的主机地址信息";
+setsockopt(recv_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*) & join_addr, sizeof(join_addr));
+....
+```
+##### struct ip_mreq
+```c
+struct ip_mreq
+{
+	struct in_addr imr_multiaddr;
+	struct in_addr imr_interface;
+}
+```
+第一个成员imr_multiaddr中写入加入的组IP地址。第二个成员imr_interface是加入该组的套接字所属主机的IP地址，也可使用INADDR_ANY。
+
+**实现多播Sender和Reciver**
+多播中用“发送者”（以下称为Sender）和“接受者”（以下称为Receiver）替代服务器端和客户端。此处的Sender是多播数据的发送主体，Receiver是需要多播组加入过程的数据接收主题。
