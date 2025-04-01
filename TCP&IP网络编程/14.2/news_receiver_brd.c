@@ -24,6 +24,9 @@ int main(int argc, char *argv[])
     if (recv_sock == -1)
         error_handling("socket() error!");
 
+    int opt = 1;
+    setsockopt(recv_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -36,7 +39,7 @@ int main(int argc, char *argv[])
         if (str_len < 0)
             break;
         buf[str_len] = 0;
-        fputs(buf, stdout);
+        printf("%s\n", buf);
     }
     close(recv_sock);
     return 0;
