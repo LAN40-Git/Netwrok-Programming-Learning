@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
         error_handling("fopen() error!");
     
     while(fgets(buf, BUF_SIZE, fp) != NULL) {
-        fgets(buf, BUF_SIZE, fp);
         sendto(send_sock, buf, strlen(buf), 0, (struct sockaddr*)&mul_addr, sizeof(mul_addr));
         sleep(2);
     }

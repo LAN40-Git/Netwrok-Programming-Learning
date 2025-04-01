@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
         sendto(send_sock, buf, strlen(buf), 0, (struct sockaddr*)&broad_addr, sizeof(broad_addr));
         sleep(2);
     }
-    fclose(fp);
     close(send_sock);
     return 0;
 }
