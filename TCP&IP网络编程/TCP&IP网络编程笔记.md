@@ -2164,3 +2164,24 @@ struct ip_mreq
 
 **实现多播Sender和Reciver**
 多播中用“发送者”（以下称为Sender）和“接受者”（以下称为Receiver）替代服务器端和客户端。此处的Sender是多播数据的发送主体，Receiver是需要多播组加入过程的数据接收主题。
+
+#### 14.2 广播
+
+**广播的理解及实现方法**
+广播是向同一网络中的所有主机传输数据的方法。分为如下两种。
+- 直接广播（Directed Broadcast）
+- 本地广播（Local Broadcast）
+差别：
+- 直接广播的IP地址中除了网络地址外，其余主机地址全部设置为1.
+- 本地广播中使用的IP地址限定为255.255.255.255
+数据通信中使用的IP地址是与UDP示例的唯一区别。默认生成的套接字会组织广播，因此，只需通过如下代码更改默认设置。
+```c
+int send_sock;
+int bcast = 1; // 对变量进行初始化以将SO_BROADCAST选项信息改为1
+....
+send_sock = socket(PF_INET, SOCK_DGRAM, 0);
+....
+setsockopt(send_sock, SOL_SOCKET, SO_BROADCAST, (void*)&bcast, sizeof(bcast));
+....
+```
+调用setsockopt函数，将SO_BROADCAST选项设置为bcast变量中的值1.这意味着可以进行数据广播。上述套接字选项只需在Sender中更改，Receiver的实现不需要该过程。
