@@ -2302,3 +2302,92 @@ select函数在各个平台上的兼容性更强。只要具有以下两个条�
 - 程序应具有兼容性
 
 **实现epoll时必要的函数和结构体**
+能够克服select函数缺点的epoll函数具有如下优点，这些优点正好与之前的select函数缺点相反。
+- 无需编写以监视状态变化为目的的针对所有文件描述符的循环语句。
+- 调用对应于select函数的epoll_wait函数时无需每次传递监视对象信息。
+下面介绍epoll服务器端实现中需要的3个函数
+- epoll_create：创建保存epoll文件描述符的空间
+- epoll_ctl：向空间注册并注销文件描述符
+- epoll_wait：与select函数类似，等待文件描述符发生变化
+select方式中为了保存监视对象文件描述符，直接声明了fd_set变量。但epoll方式下由操作系统负责保存监视对象文件描述符，因此需要向操作系统请求创建保存文件描述符的空间，此时使用的函数就是epoll_create。
+此外，为了添加和删除监视对象文件描述符，select方式中需要FD_SET、FD_CLR函数。但在epoll凡是中，通过epoll_函数请求操作系统完成。还有，select方式中通过fd_set变量查看监视对象的状态变化（事件发生与否），而epoll方式中通过如下结构体epoll_event将发生变化的（发生事件的）文件描述符单独集中到一起。
+##### struct epoll_event
+``` c
+struct epoll_event
+{
+	__uint32_t events;
+	epoll_data_t data;
+}
+typedef union epoll_data
+{
+	void *ptr;
+	int fd;
+	__uint32_t u32;
+	__uint64_t u64;
+} epoll_data_t;
+```
+声明足够大的epoll_event结构体数组后，传递给epoll_wait函数时，发生变化的文件描述符信息将被填入该数组。
+
+##### epoll_create()
+生成epoll例程。
+```c
+#include <sys/epoll.h>
+
+int epoll_create(int size);
+// 成功时返回epoll文件描述符，失败时返回-1
+// size epoll实例的大小
+```
+调用epoll_create函数时创建的文件描述符保存空间称为“epoll例程”，但有些情况下名称不同，需要稍加注意。通过参数size传递的值决定epoll例程的大小、但该值只是向操作系统提的建议。换言之，size并非用来决定epoll例程的大小，而仅供操作系统参考。
+>[!NOTE] 操作系统将完全忽略传递给epoll_create的参数
+>Linux 2.6.8之后的内核将完全忽略传入epoll_create函数的size参数，因为内核会根据情况调整epoll例程的大小。
+
+##### epoll_ctl()
+生成epoll例程后，应在其内部注册监视对象文件描述符，此时使用epoll_clt函数。
+```c
+#include <sys/epoll.h>
+
+int epoll_ctl(int epfd, int op, struct epoll_event *event);
+// 成功时返回0，失败时返回-1
+// epfd 用于注册监视对象的epoll例程的文件描述符
+// op 用于指定监视对象的添加、删除或更改等操作
+// fd 需要注册的监视对象文件描述符
+// event 监视对象的事件类型
+```
+epoll_ctl第二个参数传递的常量及含义：
+- EPOLL_CTL_ADD：将文件描述符注册到epoll例程
+- EPOLL_CTL_DEL：从epoll例程中删除文件描述符
+- EPOLL_CTL_MOD：更改注册的文件描述符的关注事件发生情况
+epoll_event的成员events中可以保存的常量及所指的事件类型
+- EPOLLIN：需要读取数据的情况
+- EPOLLOUT：输出缓冲为空，可以立即发送数据的情况
+- EPOLLPRI：收到OOB数据的情况
+- EPOLLRDHUP：断开连接或半关闭的情况，这在边缘触发方式下非常有用
+- EPOLLERR：发生错误的情况
+- EPOLLET：以边缘触发的方式得到事件通知
+- EPOLLONESHOT：发生一次事件后，相应文件描述符不再收到事件通知。因此需要向epoll_ctl函数的第二个参数传递EPOLL_CTL_MOD，再次设置事件
+可以通过位或运算同时传递多个上述参数。
+
+##### epoll_wait()
+与select函数对应的函数是epoll_wait函数，epoll相关函数中最后调用该函数
+```c
+#include <sys/epoll.h>
+
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+// 成功时返回发生事件的文件描述符，失败时返回-1
+// epfd 表示事件发生监视范围的epoll例程的文件描述符
+// events 保存发生事件的文件描述符集合的结构体地址值
+// maxevents 第二个参数中可以保存的最大事件数
+// timeout 以1/1000秒为单位的等待事件，传递-1时，一直等待直到发生事件
+```
+该函数的调用方式如下。需要注意的是，第二个参数所指缓冲需要动态分配。
+```c
+int event_cnt;
+struct epoll_event *ep_events;
+.....
+ep_events = malloc(sizeof(struct epoll_event)*EPOLL_SIZE); // EPOLL_SIZE是宏常量
+.....
+event_cnt = epoll_wait(epfd, ep_events, EPOLL_SIZE, -1);
+.....
+```
+调用函数后，返回发生事件的文件描述符数，同时在第二个参数指向的缓冲中保存发生事件的文件描述符集合。
+
