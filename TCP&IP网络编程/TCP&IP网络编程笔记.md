@@ -2448,6 +2448,7 @@ POSIX是Portable Operationg System Interface for Computer Environment（适用�
 
 **线程的创建和执行流程**
 线程具有单独的执行流，因此需要单独定义线程的main函数，还需要请求操作系统在单独的执行流中执行该函数，完成该功能的函数如下。
+##### pthread_create()
 ```c
 #include <pthread.h>
 
@@ -2459,3 +2460,222 @@ int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict at
 // arg 通过第三个参数传递调用函数时包含传递参数信息的变量地址值
 ```
 要想理解好上述函数的参数，需要熟练掌握restrict关键字和函数指针相关语法。
+
+##### pthread_join()
+调用该函数的进程（或线程）将进入等待状态，直到第一个参数为ID 的线程终止为止。
+```c
+#include <pthrread.h>
+
+int pthread_join(pthread_t thread, void **status);
+// 成功时返回0，失败时返回其他值
+// thread 该参数值ID的线程终止后才会从该函数返回
+// status 保存线程的main函数返回值的指针变量地址值
+```
+
+**可在临界区内调用的函数**
+多个线程同时调用函数时（执行时）可能产生问题。这类函数内部存在临界区，也就是说，多个线程同时执行这部分代码时，可能引起问题。临界区中至少存在1条这类代码。
+根据临界区是否引起问题，函数可分为以下2类。
+- 线程安全函数（Thread-safe function）
+- 非线程安全函数（Thread-unsafe function）
+
+大多数标准函数都是线程安全的函数，并且我们不需要自己区分线程安全的函数和非线程安全的函数。因为这些平台在定义废县丞安全函数的同时，提供了具有相同功能的线程安全的函数。
+线程安全函数的名称后缀通常为_r（这与Windows平台不同）。
+启动_REENTRANT宏可以让某些库自动调用线程安全的函数以替代原来的函数，或者在编译时加上选项-D_REENTRANT，也可以启动_REENTRANT宏。
+```
+gcc -D_REENTRANT input.c -o output
+```
+
+#### 18.3 线程存在的问题和临界区
+
+**多个线程访问同一变量是问题**
+在有多个变量访问同一变量时，一个线程对变量做出更改时需要取出变量，作出更改后在放回，但是在 取出-放回前一瞬间 这段时间间隔内，其他线程可能将还未被更改的变量取走，这就导致线程对这个变量进行的操作最终无法得到预期的结果。因此，访问同一变量时要确保线程之间同步。
+
+#### 18.4 线程同步
+
+**同步的两面性**
+线程同步用于解决线程访问顺序引发的问题。需要同步的情况可以从如下两方面考虑。
+- 同时访问同一内存空间时发生的情况。
+- 需要指定访问同一内存空间的线程执行顺序的情况。
+
+**互斥量**
+互斥量是“Mutual Exclusion”的简写，表示不允许多个线程同时访问。互斥量主要用于解决线程同步访问的问题。
+线程中为了保存临界区需要锁机制，而互斥量就是一把优秀的锁。
+##### pthread_mutex_init() & pthread_mutex_destory
+```c
+#include <pthread.h>
+
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
+int pthread_mutex_destory(pthread_mutex_t *mutex);
+// 成功时返回0，失败时返回其他值
+// mutex 创建互斥量时传递保存互斥量的变量的地址值，销毁时传递需要销毁的互斥量地址值
+// attr 传递即将创建的互斥量属性，没有特别需要指定的属性时传递NULL
+```
+为了创建相当于锁系统的互斥量，需要声明如下pthread_mutex_t型变量：
+```c
+pthread_mutex_t mutex;
+```
+该变量的地址将传递给pthread_mutex_init函数，用来保存操作系统创建的互斥量（锁系统）。调用pthread_mutex_destory函数时同样需要该信息。如果不需要配置特殊的互斥量属性，则向第二个参数传递NULL时，可以利用PTHREAD_MUTEX_INITIALIZER宏进行如下声明：
+```c
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+```
+但是应尽可能使用pthread_mutex_init函数进行初始化，因为通过宏进行初始化时很难发现发生的错误。
+##### pthread_mutex_lock() & pthread_mutex_unlock()
+```c
+#include <pthread.h>
+
+int pthread_mutex_lock(pthread_mutex_t *mutex);
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+// 成功时返回0，失败时返回其他值
+```
+创建好互斥量的前提下，可以通过如下结构保护临界区。
+```c
+pthread_mutex_lock(&mutex);
+// 临界区的开始
+// ......
+// 临界区的结束
+pthread_mutex_unlock(&mutex);
+```
+简言之，就是利用lock和unlock函数围住临界区的两端。
+
+**信号量**
+信号量与互斥量极为相似，在互斥量的基础上很容易理解信号量。
+##### sem_init() & sem_destory()
+```c
+#include <semaphore.h>
+
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+int sem_destory(sem_t *sem);
+// 成功时返回0，失败时返回其他值
+// sem 创建信号量时传递保存信号量的变量地址值，销毁时传递需要销毁的信号里昂变量地址值
+// pshared 传递其他值时，创建可由多个进程共享的信号量；传递0时，创建只允许1个进程内部使用的信号量
+// value 指定新创建的信号里昂初始值
+```
+##### sem_post() & sem_wait()
+```c
+#include <semaphore.h>
+
+int sem_post(sem_t *sem);
+int sem_wait(sem_t *sem);
+// 成功时返回0，失败时返回其他值
+// sem 传递保存信号里昂读取值的变量地址值，传递给sem_post时信号里昂增1，传递给sem_wait时，信号量减1
+```
+调用 sem_init函数时，操作系统将创建信号量对象， 此对象中记录着"信号量值" ( Semaphore
+Value) 整数 。该值在调用 sem_post函数时增1，调用sem_wait函数时减1。 但信号量的值不能小于0，因 此，在信号量为0的情况下调用sem_wait函数时 ，调用函数的线程将进入阻塞状态(因为函
+数未返回)。当然，此时如果有其他线程调用sem_post函数 ，信号量的值将变为1，而原本阻塞的线程可以将该信号量重新减为0并跳出阻塞状态 。实际上就是通过这种特性完成临界区的同步操作，可以通过如下形式同步临界区(假设信号量的初始值为1)。
+```c
+sem_wait(&sem); // 信号量变为0
+// 临界区的开始
+// ......
+// 临界区的结束
+sem_post(&sem); // 信号量变为1
+```
+#### 18.5 线程的销毁和多线程并发服务器端的实现
+
+**销毁线程的3中方法**
+Linux线程并不是在首次调用线程main函数返回时自动销毁，所以用如下2中方法之一加以明确。否则由线程创建的内存空间将一直存在，
+- 调用pthread_join函数
+- 调用pthread_detach函数
+之前调用过pthread_join函数。调用该函数时，不仅会等待线程终止，还会引导线程销毁。但该函数的问题是，线程终止前，调用该函数的线程将进入阻塞状态。因此，通常通过如下函数调用引导线程销毁。
+```c
+#include <pthread.h>
+
+int pthread_detach(pthread_t thread);
+// 成功时返回0，失败时返回其他值
+// thread 终止的同时需要销毁的线程ID
+```
+调用上述函数不会引起线程终止或进入阻塞状态，可以通过该函数引导销毁线程创建的内存空间。调用该函数后不能再针对相应线程调用pthread_join函数，这需要格外注意。
+
+## Part03 基于Windows的编程
+### 第19章 Windows平台下线程的使用
+#### 19.1 内核对象
+
+**内核对象的定义**
+操作系统创建的资源由很多种。如进程、线程、文件及即将介绍的信号量、互斥量等。其中大部分都是通过程序员的请求创建的，而且请求方式（请求中使用的函数）各不相同。虽然存在一些差异，但它们之间也有如下共同点。
+
+>都是由Windows操作系统创建并管理的资源。
+
+不同资源类型在“管理“方式上也有差异。例如，文件管理中应注册并更新文件相关的数据I/O位置、文件的打开模式等。如果是线程，则应注册并维护线程ID、线程所属进程等信息。操作系统为了以记录相关信息的方式管理各种资源，在其内部生成数据块（亦可是为结构体变量）。当然，每种资源需要维护的信息不同，所以每种资源拥有的数据块格式也有差异。这类数据块称为”内核对象“。
+
+假设在Windows下创建了mydata.txt文件，此时Windows操作系统将生成1个数据块以便管理，该数据块就是内核对象。同理，Windows在创建进程、线程、线程同步信号量时也会生成相应的内核对象，用于管理操作系统资源。
+
+**内核对象归操作系统所有**
+线程、文件等资源的创建请求均在进程内部完成，但创建的内核对象所有者不是进程，而是内核（操作系统）。”所有者是内核“具有如下含义：
+
+>内核对象的创建、管理、销毁时机的决定等工作均由操作系统完成
+
+内核对象就是为了管理线程、文件等资源而由操作系统创建的数据块，其创作者和所有者均为操作系统。
+
+#### 19.2 基于Windows的线程创建
+在现代操作系统中，​**主线程（Main Thread）​**通常是由进程隐式创建的**内核级线程**，而后续的线程可以由程序显式创建（如通过 `pthread_create`）。
+
+**Windows中线程的创建方法**
+##### CreateThread();
+```c
+#include <windows.h>
+
+HANDLE CreateThread(
+	LPSECURITY_ATTRIBUTES lpThreadAttributes,
+	SIZE_T dwStackSize,
+	LPTHREAD_START_ROUTINE lpStartAddress,
+	LPVOID lpParameter,
+	DWORD dwCreationFlags,
+	LPWORD lpThreadId
+);
+// 成功时返回线程句柄，失败时返回NULL
+// lpThreadAttributes 线程安全相关信息，使用默认设置时传递NULL
+// dwStackSize 要分配给线程的栈大小，传递0时生成默认大小的栈
+// lpStartAddress 传递线程的main函数信息
+// lpParameter 调用main函数时传递的参数信息、
+// dwCreationFlags 用于指定线程创建后的行为，传递0时，线程创建后立即进入可执行状态
+// lpThreadId 用于保存线程ID 的变量地址值
+```
+>[!NOTE] Windows线程的销毁时间点
+>Windows线程在首次调用的线程main函数返回时销毁。
+
+**创建 ”使用线程安全标准C函数“ 的线程**
+如果线程要调用C/C+++标准函数，需要通过如下方法创建线程。因为通过CreateThread函数调用创建出的线程在使用C/C++标准函数时并不稳定。
+```c
+#include <process.h>
+
+uintptr_t _beginthreadex(
+	void *security,
+	unsigned stack_size,
+	unsigned (*start_address)(void*),
+	void *arglist,
+	unsigned initflag,
+	unsigned *thrdaddr
+);
+// 成功时返回线程句柄，失败时返回0
+```
+该函数与CreateThread函数相比，参数个数及参数的含义的顺序均相同，只是变量名和参数类型有所不同。
+
+#### 19.3 内核对象的2种状态
+资源类型不同，内核对象也含有不同信息。其中，应用程序实现过程中需要特别关注的信息被赋予某种”状态“。例如，线程内核对象中需要重点关注线程是否已终止，所以终止状态又称 ”signaled状态“，未终止状态称为 ”non-signaled状态“。
+
+**内核对象的状态及状态查看**
+内核对象带有1个boolean变量，其初始值未FALSE，此时的状态就是non-signaled状态。如果发生约定的情况，把该变量改为TRUE，此时的状态就是signaled状态，内核对象类型不同，进入signaled状态的情况也有所区别。
+
+##### WaitForSingleObject & WaitForMultipleObjects
+
+首先介绍WaitForSingleObject函数，该函数针对单个内核对象验证signaled状态。
+```c
+#include <windows.h>
+
+DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
+// 成功时返回事件信息，失败时返回WAIT_FAILED
+// hHandle 查看状态的内核对象句柄
+// dwMilliseconds 以1/1000秒未单位指定超时，传递INFINITE时函数不会返回，直到内核对象变成signaled状态
+// 返回值 进入signaled状态返回WAIT_OBJECT_0，超时返回WAIT_TIMEOUT
+```
+该函数由于发生事件（变为signaled状态）返回时，有时会把相应的内核对象再次改为non-signaled状态。这咋红可以再次进入non-signaled状态的内核对象称为 ”auto-reset模式“ 的内核对象，而不会自动跳转到non-signaled状态的内核对象称为 ”manual-reset模式“ 的内核对象。即将介绍的函数与上述函数不同，可以验证多个内核对象状态。
+```c
+#include <windows.h>
+
+DWORD WaitForMultipleObjects(DWORD nCount. const HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
+// 成功时返回事件信息，失败时返回WAIT_FAILED
+// nCount 需验证的内核对象数
+// lpHandles 存有内核对象句柄的数组地址值
+// bWaitAll 如果为TRUE，则所有内核对象全部变为signaled时返回；如果为FALSE，则只要有1个验证对象的状态变为signaled就会返回
+// dwMilliseconds 以1/1000秒为单位指定超时，传递INFINITE时函数不会返回，直到内核对象变为signaled状态
+```
+
