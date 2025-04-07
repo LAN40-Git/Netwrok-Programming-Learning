@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
         printf("Connected client IP: %s \n", inet_ntoa(clntAddr.sin_addr));
     }
     closesocket(hServSock);
+    CloseHandle(hThread);
     WSACleanup();
     return 0;
 }
@@ -67,18 +68,31 @@ unsigned WINAPI HandleClnt(void *arg)
     int strLen = 0;
     char msg[BUF_SIZE];
 
-    while((strLen=recv(hClntSock, msg, sizeof(msg), 0)) != 0)
+    while (1) {
+        strLen = recv(hClntSock, msg, sizeof(msg), 0);
+        if (strLen == SOCKET_ERROR) {
+            puts("Client Error!");
+            break;
+        }
+        if (strLen == 0)
+            break;
         SendMsg(msg, strLen);
+    }
+        
 
     WaitForSingleObject(hMutex, INFINITE);
     for (int i = 0; i < clntCnt; i++) {
         if (hClntSock == clntSocks[i]) {
-            while(i++ < clntCnt-1) {
+            while(i++ < clntCnt-1)
                 clntSocks[i] = clntSocks[i+1];
-            }
             break;
         }
     }
+    clntCnt--;
+    ReleaseMutex(hMutex);
+    closesocket(hClntSock);
+    printf("Closed client: %lld\n", hClntSock);
+    return 0;
 }
 
 void SendMsg(char *msg, int len)

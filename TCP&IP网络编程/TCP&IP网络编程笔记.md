@@ -2817,3 +2817,171 @@ BOOL ResetEvent(HANDLE hEvent); // to the non-signaled
 BOOL SetEvent(HANDLE hEvent);   // to the signaled
 ```
 传递事件对象句柄并希望改为non-signaled状态时，应调用ResetEvent函数。如果希望改为signaled状态，则可以调用SetEvent函数。
+
+### 第21章 异步通信I/O模型
+#### 21.1 理解异步通知I/O模型
+
+**理解同步和异步**
+异步主要指 “不一致”，它在数据I/O种非常有用。之前的Windows示例种主要通过send&recv函数进行I/O。调用send函数时，完成数据传输后才能从函数返回（确切的说，只有把数据完全传输到输出缓冲后才能返回）；而调用recv函数时，只有读到期望大小的数据后才返回。因此，相当于同步方式的I/O处理。
+同步的关键是函数的调用及返回时刻，以及数据传输的开始和完成时刻。
+
+>调用send函数的瞬间开始传输数据，send函数执行完（返回）的时刻完成数据传输。
+>调用recv函数的瞬间开始接收数据，recv函数执行完（返回）的时刻完成数据接收。
+
+可以通过图21-1解释上述两句话的含义（上述语句和图中的 “完成传输” 都是指数据完全传输到输出缓冲）。
+![](assets/Pasted%20image%2020250407214243.png)
+<center>图21-1 调用同步的I/O函数</center>
+
+异步I/O的含义如图21-2所示。
+![](assets/Pasted%20image%2020250407214443.png)
+<center>图21-2 调用异步I/O函数</center>
+
+**同步I/O的缺点及异步方式的解决方案**
+异步I/O就是为了克服同步I/O的缺点而设计的模型。从图21-1中很容易找到同步I/O的缺点：“进行I/O的过程中函数无法返回，所以不能执行其他任务！”而图21-2中，无论数据是否完成交换都返回函数，这就意味着可以执行其他任务。所以说 “异步方式能够比同步方式更有效地使用CPU”。
+
+**理解异步通知I/O模型**
+通知I/O的含义：
+
+>通知输入缓冲收到数据并需要读取，以及输出缓冲为空故可以发送数据。
+
+顾名思义，“通知I/O” 是指发生了I/O相关的特定情况。典型的通知I/O模型是select方式。select监视的3种情况中，最具代表性的就是 “收到数据的情况”。select函数就是从返回调用的函数时通知需要I/O处理的，或可以进行I/O处理的情况。但这种通知是以同步方式进行的，原因在于，需要I/O或可以进行I/O的时间点（简言之就是I/O相关事件发生的时间点）与select函数的返回时间点一致。
+
+异步通知I/O模型中函数的返回与I/O状态无关。异步通知I/O中，指定I/O监视对象的函数和实际验证状态变化的函数是相互分离的。因此，指定监视对象后可以离开执行其他任务，最后再回来验证状态变化。
+#### 21.2 理解和实现异步通知I/O模型
+异步通知I/O模型的实现方法有2种：一种是使用WSAEventSelect函数，另一种是使用WSAAsyncSelect函数。使用WSAAsyncSelect函数时需要指定Windows句柄以获取发生的事件。
+
+**WSAEventSelect函数和通知**
+如前所属，告知I/O状态变化的操作就是 “通知”。I/O的状态变化可以分为不同情况。
+- 套接字的状态变化：套接字的I/O状态变化。
+- 发生套接字相关事件：发生套接字I/O相关事件。
+##### WSAEventSelect()
+```c
+#include <winsock2.h>
+
+int WSAEventSelect(SOCKET s, WSAEVENT hEventObject, long lNetworkEvents);
+// 成功时返回0，失败时返回SOCKET_ERROR
+// s 监视对象的套接字句柄
+// hEventObject 传递事件句柄以验证事件发生与否
+// lNetworkEvents 希望监视的事件类型信息
+```
+传入参数s的套接字内只要发生lNetworkEvents种指定的事件之一，WSAEventSelect函数就将hEventObject句柄所指内核对象改为signaaled状态。因此，该函数又称 “连接事件对象和套接字的函数”。
+另外一个重要的事实是，无论事件发生与否，WSAEventSelect函数调用后都会直接返回，所以可以执行其他任务。也就是说，该函数以异步通知方式工作。下面介绍为该函数第三个参数的事件类型信息，可以通过位或运算同时指定多个信息。
+- FD_READ：是否存在需要接收的数据？
+- FD_WRITE：能否以非阻塞方式传输数据？
+- FD_OOB：是否收到带外数据？
+- FD_ACCEPT：是否有新的连接请求？
+- FD_CLOSE：是否有断开连接的请求？
+
+WSAEventSelect虽然不像select函数那样可以同时针对多个套接字对象调用，但是完全可以对所有对象都调用WSAEventSelect函数，一旦调用，套接字信息就会注册到操作系统，之后便不需要再调用了。
+从前面关于WSAEventSelect函数的说明种可以看出，需要补充如下内容。
+- WSAEventSelect函数的第二个参数种用到的事件对象的创建方法。
+- 调用WSAEventSelect函数后发生事件的验证方法，
+- 验证事件发生后事件类型的查看方法。
+
+**manual-reset模式事件对象的其他创建方法**
+CreateEvent函数在创建事件对象时，可以在auto-reset模式和manual-reset模式种任选其一。但我们值需要manual-reset模式non-signaled状态的事件对象，所以利用如下函数创建较为方便。
+##### WSACreateEvent()
+```c
+#include <winsock2.h>
+
+WSAEVENT WSACreateEvent(void);
+// 成功时返回事件对象句柄，失败时返回WSA_INVALID_EVENT
+```
+上述声明种返回类型WSAEVENT的定义如下：
+```
+#define WSAEVENT HANDLE
+```
+实际上就是内核对象句柄。另外，为了销毁通过上述函数创建的事件对象，系统提供了如下函数。
+##### WSACloseEvent()
+```c
+#include <winsock2.h>
+
+BOOL WSACloseEvent(WSAEVENT hEvent);
+// 成功时返回TRUE，失败时返回FALSE
+```
+
+**验证是否发生事件**
+接下来要考虑调用WSAEventSelect函数后的处理。为了验证是否发生事件，需要查看事件对象。完成该任务的函数如下，除了多1个参数外，其余部分与WaitForMultipleObjects函数完全相同。
+##### WSAWaitForMultipleEvents()
+```c
+#include <winsock2.h>
+
+DWORD WSAWaitForMultipleEvents(DWORD cEvents, const WSAEVENT *lphEvents, BOOL fWaitAll, DWORD dwTimeout, BOOL fAlertable);
+// 成功时返回发生事件的对象信息，失败时返回WSA_INVALID_EVENT
+// cEvents 需要验证是否转为signaled状态的事件对象的个数
+// lphEvents 存有事件对象句柄的数组地址值
+// fWaitAll 传递TRUE时，所有事件对象在signaled状态时返回；传递FALSE时，只要其中1个变为signaled状态就返回
+// dwTimeout 以1/1000秒为单位指定超时，传递WSA_INFINITE时，直到变为signaled状态时才会返回。
+// fAlertable 传递TRUE时进入alertable wait（可警告等待）状态
+// 返回值 返回值减去常量WSA_WAIT_EVENT_0时，可以得到转变为signaled状态的事件对象句柄对应的索引，可以通过该索引在第二个参数指定的数组中查找句柄。如果有多个事件对象变为signaled状态，则会得到其中较小的值。发生超时将返回WAIT_TIMEOUT
+```
+由于发生套接字事件，事件对象转为signaled状态后该函数才返回，所以它非常有利于确认事件发生与否。但由于最多可传递64个事件对象，如果需要监视更多句柄，就只能创建线程或扩展保存句柄的数组，并多次调用上述函数。
+>[!NOTE] 最大句柄数
+>可以通过以宏的方式声明的WSA_MAXIMUM_WAIT_EVENTS 常量得知WSAWaitForMultipleEvents函数可以同时监视的最大事件对象数。该常量值为64，所以最大句柄数为64个。但可以更改这一限制，日后发布新版本的操作系统时可能更改该常量。
+
+WSAWaitForMultipleEvents函数如何得到转为singaled状态的所有事件对象句柄的信息呢？
+答案：只通过1此函数调用无法得到转为signaled状态的所有事件对象句柄的信息。通过该函数可以得到转为signaled状态的事件对象中的第一个（按数组中的保存顺序）索引值。但可以利用 “事件对象为manual-reset模式” 的特点，通过如下方式获得所有signaled状态的事件对象。
+```c
+int posInfo, startIdx, i;
+......
+posInfo = WSAWaitForMultipleEvents(numOfSock, hEventArray, FALSE, WSA_INFINITE, FALSE);
+startIdx = posInfo - WSA_WAIT_EVENT_0;
+......
+for (i = startIdx; i < numOfSock; i++) {
+	int sigEventIdx = WSAWaitForMultipleEvents(1, &hEventArray[i], TRUE, 0, FALSE);
+	......
+}
+```
+注意观察上述代码中的循环 。循环中从第一个事件对象到最后一个事件对象逐一依序验证是
+否转为singaled状态 (超时信息为 0 ，所以调用函数后立即返回 )。之所以能做到这一点 ，完全是
+因为事件对象为manual-reset模式，这也 解释了为何在异步通知I/O模型中事件对象必须为manual-reset模式 。
+
+**区分事件类型**
+既然已经通过WSAWaitForMultipleEvents函数得到了转为signaled状态的事件对象，最后就要确定相应对象进入signaled状态的原因。为完成该任务，我们引入如下函数。调用此函数时，不仅需要signaled状态的事件对象句柄，还需要与之连接的（有WSAEventSelect函数调用引发的）发生事件的套接字句柄。
+##### WSAEnumNetworkEvents()
+```c
+#include <winsock2.h>
+
+int WSAEnumNetworkEvents(SOCKET s, WSAEVENT hEventObject, LPWSANETWORKEVENTS lpNetworkEvents);
+// 成功时返回0，失败时返回SOCKET_ERROR
+// s 发生事件的套接字句柄
+// hEventObject 与套接字相连的（由WSAEventSelect函数调用引发的）signaled状态的事件对象句柄
+// lpNetworkEvents 保存发生的事件类型信息和错误信息的WSANETWORKEVENTS结构体变量地址值
+```
+上述函数将manual-reset模式的事件对象改为non-signaled状态，所以得到发生的事件类型后，不必单独调用ResetEvent函数。下面介绍与上述函数有关的WSANETWORKEVENTS结构体
+```c
+typedef struct _WSANETWORKEVENTS
+{
+	long lNetworkEvents;
+	int iErrorCode[FD_MAX_EVENTS];
+} WSANETWORKEVENTS, *LPWSANETWORKEVENTS;
+```
+上述结构体的lNetworkEvents成员将保存发生的事件信息。与WSAEventSelect函数的第三个参数相同，需要接收数据时，该成员为FD_READ；有连接请求时，该成员为FD_ACCEPT。因此，可通过如下方式查看发生的事件类型。
+```c
+WSANETWORKEVENTS netEvents;
+.....
+WSAEnumNetworkEvents(hSock, hEvent, &netEvents);
+if (netEvents.lNetworkEvent & FD_ACCEPT) {
+	// FD_ACCEPT事件的处理
+}
+if (netEvents.lNetworkEvents & FD_READ) {
+	// FD_READ事件的处理
+}
+if (netEvents.lNetworkEvents & FD_CLOSE) {
+	// FD_CLOSE事件的处理
+}
+```
+另外，错误信息将保存到声明为成员的iErrorCode数组（发生错误的原因可能很多，因此用数组声明）。验证方法如下。
+- 如果发生FD_READ相关错误，则在iErrorCode[FD_READ_BIT]中保存除0以外的其他值。
+- 发生FD_WRITE相关错误，则在iErrorCode[FD_WRITE_BIT]中保存除0以外的其他值。
+
+因此可以用如下方式检查错误。
+```c
+WSANETWORKEVENTS netEvents;
+......
+WSAEnumNetworkEvents(hSock, hEvent, &netEvents);
+......
+if (netEvents.iErrorCode[FD_READ_BIT] != 0) {
+	// 发生FD_READ事件相关错误
+}
+```

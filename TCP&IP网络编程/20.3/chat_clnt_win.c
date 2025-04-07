@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <winsock2.h>
 #include <windows.h>
 #include <process.h>
 
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
     WaitForSingleObject(hRcvThread, INFINITE);
 
     closesocket(sock);
+    CloseHandle(hSndThread);
+    CloseHandle(hRcvThread);
     WSACleanup();
     return 0;
 }
@@ -58,8 +61,8 @@ unsigned WINAPI SendMsg(void *arg)
     while(1) {
         fgets(msg, BUF_SIZE, stdin);
         if (!strcmp(msg, "q\n") || !strcmp(msg, "Q\n")) {
-            closesocket(sock);
-            exit(0);
+            shutdown(sock, SD_BOTH);
+            return 0;
         }
         sprintf(nameMsg, "%s %s", name, msg);
         send(sock, nameMsg, sizeof(nameMsg), 0);
@@ -74,8 +77,10 @@ unsigned WINAPI RecvMsg(void *arg)
     int strLen;
     while(1) {
         strLen = recv(sock, nameMsg, BUF_SIZE+NAME_SIZE-1, 0);
-        if (strLen == -1)
-            return -1;
+        if (strLen <= 0) {
+            shutdown(sock, SD_RECEIVE);
+            return 0;
+        }
         nameMsg[strLen] = 0;
         fputs(nameMsg, stdout);
     }
