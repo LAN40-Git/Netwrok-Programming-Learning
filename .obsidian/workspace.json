@@ -22,6 +22,27 @@
             }
           }
         ]
+      },
+      {
+        "id": "e5d2de1cd2e46bf1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a3b6486103a59567",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "TCP&IP网络编程笔记 的大纲"
+            }
+          }
+        ]
       }
     ],
     "direction": "vertical"
@@ -171,6 +192,9 @@
   },
   "active": "716a72bbd998e17e",
   "lastOpenFiles": [
+    "TCP&IP网络编程/20.3/chat_serv_win.exe",
+    "TCP&IP网络编程/20.3/chat_clnt_win.exe",
+    "TCP&IP网络编程/20.3/chat_clnt_win.c",
     "TCP&IP网络编程/20.3/chat_serv_win.c",
     "TCP&IP网络编程/20.3",
     "TCP&IP网络编程/20.2/SyncEvent_win.exe",
@@ -179,9 +203,6 @@
     "TCP&IP网络编程/20.2/a.c",
     "TCP&IP网络编程/20.2/SyncSema_win.c",
     "TCP&IP网络编程/20.2/SyncMutex_win.exe",
-    "TCP&IP网络编程/20.2/SyncMutex_win.c",
-    "TCP&IP网络编程/20.2",
-    "TCP&IP网络编程/20.1/SyncCS_win.exe",
     "TCP&IP网络编程/assets/Pasted image 20250404000259.png",
     "TCP&IP网络编程/TCP&IP网络编程笔记.md",
     "TCP&IP网络编程/assets/Pasted image 20250403231423.png",
