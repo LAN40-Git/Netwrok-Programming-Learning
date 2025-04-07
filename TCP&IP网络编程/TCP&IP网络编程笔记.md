@@ -2653,7 +2653,7 @@ uintptr_t _beginthreadex(
 资源类型不同，内核对象也含有不同信息。其中，应用程序实现过程中需要特别关注的信息被赋予某种”状态“。例如，线程内核对象中需要重点关注线程是否已终止，所以终止状态又称 ”signaled状态“，未终止状态称为 ”non-signaled状态“。
 
 **内核对象的状态及状态查看**
-内核对象带有1个boolean变量，其初始值未FALSE，此时的状态就是non-signaled状态。如果发生约定的情况，把该变量改为TRUE，此时的状态就是signaled状态，内核对象类型不同，进入signaled状态的情况也有所区别。
+内核对象带有1个boolean变量，其初始值为FALSE，此时的状态就是non-signaled状态。如果发生约定的情况，把该变量改为TRUE，此时的状态就是signaled状态，内核对象类型不同，进入signaled状态的情况也有所区别。
 
 ##### WaitForSingleObject & WaitForMultipleObjects
 
@@ -2667,7 +2667,7 @@ DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
 // dwMilliseconds 以1/1000秒未单位指定超时，传递INFINITE时函数不会返回，直到内核对象变成signaled状态
 // 返回值 进入signaled状态返回WAIT_OBJECT_0，超时返回WAIT_TIMEOUT
 ```
-该函数由于发生事件（变为signaled状态）返回时，有时会把相应的内核对象再次改为non-signaled状态。这咋红可以再次进入non-signaled状态的内核对象称为 ”auto-reset模式“ 的内核对象，而不会自动跳转到non-signaled状态的内核对象称为 ”manual-reset模式“ 的内核对象。即将介绍的函数与上述函数不同，可以验证多个内核对象状态。
+该函数由于发生事件（变为signaled状态）返回时，有时会把相应的内核对象再次改为non-signaled状态。这之后可以再次进入non-signaled状态的内核对象称为 ”auto-reset模式“ 的内核对象，而不会自动跳转到non-signaled状态的内核对象称为 ”manual-reset模式“ 的内核对象。即将介绍的函数与上述函数不同，可以验证多个内核对象状态。
 ```c
 #include <windows.h>
 
@@ -2679,3 +2679,141 @@ DWORD WaitForMultipleObjects(DWORD nCount. const HANDLE *lpHandles, BOOL bWaitAl
 // dwMilliseconds 以1/1000秒为单位指定超时，传递INFINITE时函数不会返回，直到内核对象变为signaled状态
 ```
 
+### 第20章 Windows中的线程同步
+#### 20.1 同步方法的分配及CRITICAL_SECTION同步
+
+**用户模式（User mode）和内核模式**
+Windows操作系统的运行方式（程序运行方式）是 “双模式操作”（Dual-mode Operation），这意味着Windows在运行过程中存在如下2种模式。
+- 用户模式：运行应用程序的基本模式，禁止访问物理设备，而且会限制访问的内存区域。
+- 内核模式：操作系统运行时的模式，不仅不会限制访问的内存区域，而且访问的硬件设备也不会受限。
+
+内核是操作系统的核心模块，可以简单定义为如下形式。
+- 用户模式：应用程序的运行模式。
+- 内核模式：操作系统的运行模式。
+
+实际上，在应用程序运行过程中，Windows操作系统不会一直停留在用户模式，而是在用户模式和内核模式之间切换。模式切换堆系统而言其实是一种负担，频繁的模式切换会影响性能。
+
+**用户模式同步**
+用户模式同步时用户模式下进行的同步，即无需操作系统帮助而在应用程序级别进行的同步。用户模式同步的最大优点是——速度快。无需切换到内核模式。
+
+**内核模式同步**
+内核同步模式的优点如下。
+- 比用户模式同步提供的功能更多。
+- 可以指定超时，防止发生死锁。
+
+因为都是通过操作系统的帮助完成同步的，所以提供更多功能。特别是在内核模式同步中，可以跨越进程进行线程同步。与此同时，由于无法避免用户模式和内核模式之间的切换，所以性能上会受到一定影响。
+
+**基于 CRITICAL_SECTION 的同步**
+基于CRITICAL_SECTION的同步中将创建并运用 “CRITICAL_SECTION对象”，但这并非内核对象。与其他同步对象相同，它是进入临界区的一把 “钥匙”。因此，为了进入临界区，需要得到CRITICAL_SECTION对象这把 “钥匙”。相反，离开时应上交CRITICAL_SECTION对象（以下简称CS）。下面介绍CS对象的初始化及销毁相关函数。
+```c
+#include <windows.h>
+
+void InitializeCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
+void DeleteCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
+// lpCriticalSection Init...函数中传入需要初始化的CRITICAL_SECTION对象的地址值，反之，Del...函数中传入需要接触的CRITICAL_SECTION对象的地址值。
+```
+上述函数丶参数类型LPCRITICAL_SECTION是CRITICAL_SECTION指针类型。另外DeleteCriticalSection并不是销毁CRITICAL_SECTION对象的函数。该函数的作用是销毁CRITICAL_SECTION对象使用过的（CRITICAL_SECTION对象相关的）资源。接下来介绍获取（拥有）及释放CS对象的函数，可以简单理解为获取和释放 “钥匙” 的函数。
+```c
+#include <windows.h>
+
+void EnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
+void LeaveCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
+// lpCriticalSection 获取（拥有）和释放的CRITICAL_SECTION对象的地址值
+```
+#### 20.2 内核模式的同步方法
+典型的内核模式同步方法与基于CS对象的同步方法类似，因此，互斥量对象同样可以理解为 “钥匙”。首先介绍创建互斥量对象的函数。
+##### CreateMutex()
+```c
+#include <windows.h>
+
+HANDLE CreateMutex(LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCTSTR lpName);
+// 成功时返回创建的互斥量对象句柄，失败时返回NULL
+// lpMutexAttributes 传递安全相关的配置信息，使用默认安全设置可以传递NULL
+// bInitialOwner 如果为True，则创建出的互斥量对象属于调用该函数的线程，同时进入non-signaled状态；如果为FALSE，则创建出的互斥量对象不属于任何线程，此时状态为signaled
+// lpName 用于命名互斥量对象。传入NULL时创建无名的互斥量对象
+```
+从上述参数说明中可以看到，如果互斥量对象不属于任何拥有者，则将进入signaled状态。利用该特点进行同步。另外，互斥量属于内核对象，所以通过如下函数销毁。
+##### CloseHandle(HANDLE hObject)
+```c
+#include <windows.h>
+
+BOOL CloseHandle(HANDLE hObject);
+// 成功时返回TRUE，失败时返回FALSE
+// hObject 要销毁的内核对象的句柄
+```
+上述函数是销毁内核对象的函数，所以同样可以销毁即将介绍的信号量及事件。下面介绍获取和释放互斥量的函数，获取使用的是WaitForSingleObject函数。
+```c
+#include <windows.h>
+
+BOOL ReleaseMutex(HANDLE hMutex);
+// 成功时返回TRUE，失败时返回FALSE
+// hMutex 需要释放（解除所有）的互斥量独享句柄
+```
+互斥量被某一线程获取时（拥有时）为signaled状态，释放时（未拥有时）进入signaled状态。因此，可以使用WaitForSingleObject函数验证互斥量是否已分配。该函数的调用结果有如下2种。
+- 调用后进入阻塞状态：互斥量对象已被其他线程获取， 现处于non-signaled状态。
+- 调用后直接返回：其他线程未占用互斥量对象，现处于signaled状态。
+互斥量在WaitForSingleObject函数返回时自动进入non-signaled状态，因为它是 “auto-reset” 模式的内核对象。基于互斥量的临界区保护代码如下。
+```c
+WaitForSingleObject(hMutex, INFINITE);
+// 临界区的开始
+// ......
+// 临界区的结束
+ReleaseMutex(hMutex);
+```
+
+**基于信号量对象的同步**
+Windows中基于信号量对象的同步也与Linux下的信号量类似，二者都是利用名为 “信号量值”（Semaphore Value）的整数值完成同步的，而且该值都不能小于0。当然，Windows的信号量值注册于内核对象。
+下面介绍创建信号量对象的函数，当然，其销毁同样是利用CloseHandle函数进行的。
+##### CreateSemaphore()
+```c
+#include <windows.h>
+
+HANDLER CreateSemaphore(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCTSTR lpName);
+// 成功时返回创建的信号量对象的句柄，失败时返回NULL
+// lpSemaphoreAttributes 安全配置信息，采用默认安全设置时传递NULL
+// lInitialCount 指定信号量的初始值，应大于0小于lMaximumCount
+// lMaximumCount 信号量的最大值。该值为1时，信号量变为只能表示0和1的二进制信号量
+// lpName 用于命名信号量对象。传递NULL时创建无名的信号量对象
+```
+可以利用 “信号量值为0时进入non-signaled状态，大于0时进入signaled状态” 的特性进行同步。向lInitialCount参数传递0时，创建non-signaled状态的信号量对象。而向lMaximumCount传入3时，信号量最大值为3，因此可以实现3个线程同时访问临界区时的同步。下面介绍释放信号量对象的函数。
+##### ReleaseSemaphore()
+```c
+#include <windows.h>
+
+BOOL ReleaseSemaphore(HANDLE hSemaphore, LONG lReleaseCount, LPLONG lpPreviousCount);
+// 成功时返回TRUE，失败时返回FALSE
+// hSemaphore 传递需要释放的信号量对象
+// lReleaseCount 释放意味着信号量值的增加，通过该参数可以指定增加的值。超过最大值则不增加，返回FALSE
+// lpPreviousCount 用于保存修改之前值的变量地址，不需要时可传递NULL
+```
+信号量对象的值大于0时成为signaled状态，为0时成为non-signaled状态。因此，调用WaitForSingleObject函数时，信号量大于0的情况下才会返回。返回的同时将信号量减1，同时进入non-signaled状态（当然，仅限于信号量减1后等于0的情况）。可以通过如下程序结构保护临界区。
+```c
+WaitForSingleObject(hSemaphore, INFINITE);
+// 临界区的开始
+// ......
+// 临界区的结束
+ReleaseSemaphore(hSemaphore, 1, NULL);
+```
+
+**基于事件对象的同步**
+事件同步对象与前2种同步方法相比有很大不同，区别就在于，该方式下创建对象时，可以在自动以non-signaled状态运行的auto-reset模式和与之相反的manual-reset模式中任选其一。而事件对象的主要特点是可以创建manual-reset模式的对象。首先介绍创建事件对象的函数。
+##### CreateEvent()
+```c
+#include <windows.h>
+
+HANDLE CreateEvent(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCTSTR lpName);
+// 成功时返回创建的事件对象句柄，失败时返回NULL
+// lpEventAttributes 安全配置相关参数，采用默认安全配置时传入NULL
+// bManualReset 传入TRUE时创建manual-reset模式的事件对象，传入FALSE时创建auto-reset模式的事件对象
+// bInitialState 传入TRUE时创建signaled状态的事件对象，传入FALSE时创建non-signaled状态的事件对象
+// lpName 用于命名事件对象。传递NULL时创建无名的事件对象
+```
+需要重点关注的是第二个参数。传入TRUE时创建manual-reset模式的事件对象，此时即使WaitForSingleObject函数返回也不会回到non-signaled状态，因此，在这种情况下，需要通过如下2个函数明确更改对象状态。
+##### ResetEvent() & SetEvent()
+```c
+#include <windows.h>
+
+BOOL ResetEvent(HANDLE hEvent); // to the non-signaled
+BOOL SetEvent(HANDLE hEvent);   // to the signaled
+```
+传递事件对象句柄并希望改为non-signaled状态时，应调用ResetEvent函数。如果希望改为signaled状态，则可以调用SetEvent函数。

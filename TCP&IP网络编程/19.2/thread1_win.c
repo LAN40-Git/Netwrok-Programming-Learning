@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
     }
     Sleep(3000);
     puts("end of main");
+    CloseHandle(hThread);
     return 0;
 }
 
