@@ -2985,3 +2985,119 @@ if (netEvents.iErrorCode[FD_READ_BIT] != 0) {
 	// 发生FD_READ事件相关错误
 }
 ```
+
+### 第22章 重叠I/O模型
+#### 22.1 理解重叠I/O模型
+
+**重叠I/O**
+图22-1给出重叠I/O的原理。
+![](assets/Pasted%20image%2020250408163024.png)
+<center>图22-1 重叠I/O模型</center>
+
+如图22-1所示，同一线程内部向多个目标传输（或从多个目标接收）数据引起的I/O重叠现象称为 ”重叠I/O“。为了完成这项任务，调用的I/O函数应立即返回，只有这样才能发送后继数据。
+Windows中的重叠I/O不仅包含图22-1所示的I/O（这是基础），还包含确认I/O完成状态的方法。
+
+**创建重叠I/O套接字**
+```c
+#include <winsock2.h>
+
+SOCKET WSASocket(int af, int type, int protocol, LPWSAPROTOCOL_INFO lpProtocolInfo, GROUP g, DWORD dwFlags);
+// 成功时返回套接字句柄，失败时返回INVALID_SOCKET
+// af 协议族信息
+// type 套接字数据传输方式
+// protocol 2个套接字之间使用的协议信息
+// lpProtocolInfo 包含创建的套接字信息的WSAPROTOCOL_INFO结构体变量地址值，不需要时传递NULL
+// g 为扩展函数而预约的参数，可以使用0
+// dwFlags 套接字属性信息
+```
+可以通过如下函数调用创建出可以进行重叠I/O的非阻塞模式的套接字。
+```c
+WSASocket(PF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+```
+**执行重叠I/O的WSASend函数**
+创建出具有重叠I/O属性的套接字后，接下来2个套接字（服务器端/客户端之间的）连接过程与一般的套接字连接过程相同，但I/O数据时使用的函数不同。先介绍重叠I/O中使用的数据输出函数。
+##### WSASend()
+```c
+#include <winsock2.h>
+
+int WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+// 成功时返回0，失败时返回SOCKET_ERROR
+// s 套接字句柄，传递具有重叠I/O属性的套接字句柄时，以重叠I/O模型输出
+// lpBuffers WSABUF结构体变量数组的地址值，WSABUF中存有待传输数据
+// dwBufferCount 第二个参数中数组的长度
+// lpNumberOfBytesSent 用于保存实际发送字节数的变量地址值
+// dwFlags 用于更改数据传输特性，如传递MSG_OOB时发送OOB模式的数据
+// lpOverlapped WSAOVERLAPPED结构体变量的地址值，使用事件对象，用于确认完成数据传输
+// lpCompletionRoutine 传入Completion Routine函数的入口地址值，可以通过该函数确认是否完成数据传输
+```
+接下来介绍上述函数的第二个结构体参数类型，该结构体中存有待传输数据的地址和大小等信息。
+```c
+typedef struct __WSABUF
+{
+	u_long len; // 待传输数据的大小
+	char FAR *buf; // 缓冲地址值
+} WSABUF, *LPWSABUF;
+```
+利用上述函数传输数据时可以按如下方式编写代码。
+```c
+WSAEVENT event;
+WSAOVERLAPPED overlapped;
+WSABUF dataBuf;
+char buf[BUF_SIZE] = {"待传输的数据"};
+int recvBytes = 0;
+......
+event = WSACreateEvent();
+memset(&overlappe, 0, sizeof(overlapped)); // 所有位初始化为0
+overlapped.hEvent = event;
+dataBuf.len = sizeof(buf);
+dataBuf.buf = buf;
+WSASend(hSocket, &dataBuf, 1, &recvBytes, 0, &overlapped, NULL);
+......
+```
+调用WSASend函数时将第三个参数设置为1，因为第二个参数中待传输数据的缓冲个数为1。另外，多余参数均设置为NULL或0。其中需要注意第六个和第七个参数。第六个参数中的WSAOVERLAPPED结构体定义如下。
+```c
+typedef struct _WSAOVERLAPPE
+{
+	DWORD Internal;
+	DWORD InternalHigh;
+	DWORD Offset;
+	DWORD OffsetHigh;
+	WSAEVENT hEvent;
+} WSAOVERLAPPED, * LPWSAOVERLAPPED;
+```
+Internal、InternalHigh成员是进行重叠I/O时操作系统内部使用的成员，而Offset、OffsetHigh同样属于具有特殊用途的成员。
+##### WSAGetOverlappedResult()
+```c
+#include <winsock2.h>
+
+BOOL WSAGetOverlappedResult(SOCKET s, LPWSAOVERLAPPED lpOverlapped, LPDWORD lpcbTransfer, BOOL fWait, LPDWORD lpdwFlags);
+// 成功时返回TRUE，失败时返回FALSE
+// s 进行重叠I/O的套接字句柄
+// lpOverlapped 进行重叠I/O时传递的WSAOVERLAPPED结构体变量的地址值
+// lpcbTransfer 用于保存实际传输的字节数的变量地址值
+// fWait 如果调用该函数时仍在进行I/O，fWait为TRUE时等待I/O完成，为FALSE时将返回FALSE并跳出函数
+// lpdwFlags 调用WSARecv函数时，用于获取附加信息（例如OOB消息）。如果不需要，可以传递NULL
+```
+
+**进行重叠I/O的WSARecv函数**
+##### WSARecv()
+```c
+#include <winsock2.h>
+
+int WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+// 成功时返回0，失败时返回SOCKET_ERROR
+// s 赋予重叠I/O属性的套接字句柄
+// lpBuffers 用于保存接收数据的WSABUF结构体数组地址值
+// dwBufferCount 向第二个参数传递的数组的长度
+// lpNumberOfBytesRecvd 保存接收的数据大小信息的变量地址值
+// lpFlags 用于设置或读取传输特性信息
+// lpOverlapped WSAOVERLAPPED结构体变量地址值
+// lpCompletionRoutine Completion Routine函数地址值
+```
+
+#### 22.2 重叠I/O的I/O完成确认
+重叠I/O中有2中方法确认I/O的完成并获取结果
+- 利用WSASend、WSARecv函数的第六个参数，基于事件对象。
+- 利用WSASend、WSARecv函数的第七个参数，基于Completion Routine
+
+### 第23章 IOCP
