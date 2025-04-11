@@ -65,8 +65,13 @@ void *request_handler(void *arg)
 
     clnt_read = fdopen(clnt_sock, "r");
     clnt_write = fdopen(dup(clnt_sock), "w");
+    if (!clnt_read || !clnt_write) {
+        if (clnt_read) fclose(clnt_read);
+        if (clnt_write) fclose(clnt_write);
+        return NULL;
+    }
+
     fgets(req_line, SMALL_BUF, clnt_read);
-    printf("%s\n", req_line);
     if (strstr(req_line, "HTTP/") == NULL) {
         send_error(clnt_write);
         fclose(clnt_read);
@@ -83,6 +88,13 @@ void *request_handler(void *arg)
         return NULL;
     }
 
+    if (strcmp(ct, "text/html") != 0) {
+        send_error(clnt_write);
+        fclose(clnt_read);
+        fclose(clnt_write);
+        return NULL;
+    }
+
     fclose(clnt_read);
     send_data(clnt_write, ct, file_name);
 }
@@ -91,6 +103,12 @@ void send_data(FILE *fp, char *ct, char *file_name)
 {
     FILE *send_file;
     char header[BUF_SIZE];
+
+    send_file = fopen(file_name, "r");
+    fseek(send_file, 0, SEEK_END);
+    long file_size = ftell(send_file);
+    rewind(send_file);
+
     snprintf(header, sizeof(header),
         "HTTP/1.1 200 OK\r\n"
         "Server: Linux Web Server\r\n"
@@ -108,6 +126,7 @@ void send_data(FILE *fp, char *ct, char *file_name)
     }
     fflush(fp);
     fclose(fp);
+    fclose(send_file);
 }
 
 char *content_type(char *file)
