@@ -1,5 +1,3 @@
-# TCP&IP网络编程笔记
-[TOC]
 
 ## Part01 开始网络编程
 
@@ -675,7 +673,7 @@ ntohs 把unsigned short int类型从网络序转换到主机序
  int closesocket(SOCKET s);
  ```
 
- ### **参数解释**
+ **参数解释**
 
  1. **`SOCKET s`**
     - 这是要关闭的套接字描述符，通常由 `socket`、`accept` 等函数创建。
@@ -2634,6 +2632,7 @@ HANDLE CreateThread(
 
 **创建 ”使用线程安全标准C函数“ 的线程**
 如果线程要调用C/C+++标准函数，需要通过如下方法创建线程。因为通过CreateThread函数调用创建出的线程在使用C/C++标准函数时并不稳定。
+##### `_beginthreadex()`
 ```c
 #include <process.h>
 
@@ -3020,7 +3019,15 @@ WSASocket(PF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 ```c
 #include <winsock2.h>
 
-int WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+int WSASend(
+	SOCKET s, 
+	LPWSABUF lpBuffers, 
+	DWORD dwBufferCount, 
+	LPWORD lpNumberOfBytesSent, 
+	DWORD dwFlags, 
+	LPWSAOVERLAPPED lpOverlapped, 
+	LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
+);
 // 成功时返回0，失败时返回SOCKET_ERROR
 // s 套接字句柄，传递具有重叠I/O属性的套接字句柄时，以重叠I/O模型输出
 // lpBuffers WSABUF结构体变量数组的地址值，WSABUF中存有待传输数据
@@ -3056,7 +3063,7 @@ WSASend(hSocket, &dataBuf, 1, &recvBytes, 0, &overlapped, NULL);
 ```
 调用WSASend函数时将第三个参数设置为1，因为第二个参数中待传输数据的缓冲个数为1。另外，多余参数均设置为NULL或0。其中需要注意第六个和第七个参数。第六个参数中的WSAOVERLAPPED结构体定义如下。
 ```c
-typedef struct _WSAOVERLAPPE
+typedef struct WSAOVERLAPPED
 {
 	DWORD Internal;
 	DWORD InternalHigh;
@@ -3070,7 +3077,13 @@ Internal、InternalHigh成员是进行重叠I/O时操作系统内部使用的成
 ```c
 #include <winsock2.h>
 
-BOOL WSAGetOverlappedResult(SOCKET s, LPWSAOVERLAPPED lpOverlapped, LPDWORD lpcbTransfer, BOOL fWait, LPDWORD lpdwFlags);
+BOOL WSAGetOverlappedResult(
+	SOCKET s, 
+	LPWSAOVERLAPPED lpOverlapped, 
+	LPDWORD lpcbTransfer, 
+	BOOL fWait, 
+	LPDWORD lpdwFlags
+);
 // 成功时返回TRUE，失败时返回FALSE
 // s 进行重叠I/O的套接字句柄
 // lpOverlapped 进行重叠I/O时传递的WSAOVERLAPPED结构体变量的地址值
@@ -3084,7 +3097,15 @@ BOOL WSAGetOverlappedResult(SOCKET s, LPWSAOVERLAPPED lpOverlapped, LPDWORD lpcb
 ```c
 #include <winsock2.h>
 
-int WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+int WSARecv(
+	SOCKET s, 
+	LPWSABUF lpBuffers, 
+	DWORD dwBufferCount, 
+	LPDWORD lpNumberOfBytesRecvd,
+	LPDWORD lpFlags, 
+	LPWSAOVERLAPPED lpOverlapped,
+	LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
+);
 // 成功时返回0，失败时返回SOCKET_ERROR
 // s 赋予重叠I/O属性的套接字句柄
 // lpBuffers 用于保存接收数据的WSABUF结构体数组地址值
@@ -3101,3 +3122,147 @@ int WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberO
 - 利用WSASend、WSARecv函数的第七个参数，基于Completion Routine
 
 ### 第23章 IOCP
+
+#### 23.2 分阶段实现IOCP程序
+
+**创建 “完成端口”**
+IOCP中已完成的I/O信息将注册到完成端口对象（Completion Port，简称CP对象），但这个过程并非单纯的注册，首先需要经过如下请求过程：
+
+>该套接字的I/O完成时，请把状态信息注册到指定CP对象。
+
+该过程称为 “套接字和CP对象之间的连接请求”。因此，为了实现基于IOCP模型的服务器端，需要做如下2项工作。
+- 创建完成端口对象。
+- 建立完成端口对象和套接字之间的联系。
+
+此时的套接字必须被赋予重叠属性。上述2项工作可以通过1个函数完成，但为了创建CP对象，先介绍如下函数。
+##### CreateIoCompletionPort()-Create CP
+```c
+#include <windows.h>
+
+HANDLE CreateIoCompletionPort(
+	HANDLE FileHandle,
+	HANDLE ExistiongCompletionPort,
+	ULONG_PTR CompletionKey,
+	DWORD NumberOfConcurrentThreads
+);
+// 成功时返回CP对象句柄，失败时返回NULL
+// FileHandle 创建CP对象时传递INVALID_HANDLE_VALUE
+// ExistingCompletionPort 创建CP对象时传递NULL
+// CompletionKey 创建CP对象时传递0
+// NumberOfConcurrentThreads 分配给CP对象的用于处理I/O的线程数。例如，该参数为2时，说明分配给CP对象的可以同时运行的线程数最多为2个；如果该参数为0，系统中CPU个数就是可同时运行的最大线程数
+```
+以创建CP对象为目的调用上述函数时，只有最后一个参数才真正具有含义。
+```c
+HANDLE hCpObject;
+......
+hCpObject = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 2);
+```
+
+**连接完成端口对象和套接字**
+既然有了CP对象，接下来就要将该对象连接到套接字，只有这样才能使已完成的套接字I/O信息注册到CP对象。下面以建立连接为目的再次介绍CreateIoCompletionPort函数。
+
+##### CreateIoCompletionPort()-Connect CP to SOCKET
+```c
+#include <windows.h>
+
+HANDLE CreateIoCompletionPort(
+	HANDLE FileHandle,
+	HANDLE ExistiongCompletionPort,
+	ULONG_PTR CompletionKey,
+	DWORD NumberOfConcurrentThreads
+);
+// FileHandle 要连接到CP对象的套接字句柄
+// ExistingCompletionPort 要连接套接字的CP对象句柄
+// CompletionKey 传递已完成I/O相关信息
+// NumberOfConcurrentThreads 无论传递何值，只要该函数的第二个参数非NULL就会忽略
+```
+上述函数的第二种功能就是将FileHandle句柄指向的套接字和ExistingCompletionPort指向的CP对象相连。该函数的调用函数方式如下。
+```c
+#include <windows.h>
+
+HANDLE hCpObject;
+SOCKET hSock;
+......
+CreateIoCompletionPort((HANDLE)hSock, hCpObject, (DWORD)ioInfo, 0);
+```
+调用CreateIoCompletionPort函数后，只要针对hSock的I/O完成，相关信息就将注册到hCpObject指向的CP对象。
+
+**确认完成端口已完成的I/O和线程的I/O处理**
+##### GetQueuedCompletionStatus()
+```c
+#include <windows.h>
+
+BOOL GetQueuedCompletionStatus(
+	HANDLE CompletionPort,
+	LPDWORD lpNumberOfBytes,
+	PULONG_PTR lpCompletionKey,
+	LPOVERLAPPED *lpOverlapped,
+	DWORD dwMilliseconds
+);
+// 成功时返回TRUE，失败时返回FALSE
+// CompletionPort 用于保存I/O过程中传输的数据大小的变量地址值
+// lpNumberOfBytes 用于保存I/O过程中传输的数据大小的变量地址值
+// lpCompletionKey 用于保存CreateIoCompletionPort函数的第三个参数值的变脸地址值
+// lpOverlapped 用于保存调用WSASend、WSARecv函数时传递的OVERLAPPED结构体地址的变量地址值
+// dwMilliseconds 超时信息，超过该指定时间后将返回FALSE并跳出函数。传递INFINITE时，程序将阻塞，直到已完成I/O信息写入CP对象
+```
+
+## Part04 结束网络编程
+### 第24章 制作HTTP服务器端
+#### 24.1 HTTP概要
+
+**理解Web服务器端**
+Web服务器端的定义：
+
+>基于HTTP协议，将网页对应文件传输给客户端的服务器端。
+
+HTTP是Hypertext Transfer Protocol的缩写，Hypertext（超文本）是可以根据客户端你请求而跳转的结构化信息。
+HTTP是以超文本传输为目的而设计的应用层协议，这种协议同样属于基于TCP/IP实现的协议。连接到任意Web服务器端是，浏览器内部也会创建套接字。只不过浏览器多了一项功能，他将服务器端传输的HTML格式的超文本解析为可读性较强的视图。总之，Web服务器端是以HTTP协议为基础传输超文本的服务器端。
+>[!NOTE] HTTP是专用名词
+>HTTP中的P是Protocol（协议）的缩写，所以 “HTTP协议” 这种表示其实重复表达了 “协议” 一词。但HTTP属于专用名词，因此通常直接表示为 “HTTP协议”。
+
+**HTTP**
+
+**无状态的Stateless协议**
+为了向网络环境下同时向大量客户端提供服务，HTTP协议的请求及响应方式设计如图24.1所示。
+![](assets/Pasted%20image%2020250411184416.png)
+<center>图24-1 HTTP请求/响应过程</center>
+
+从图24-1中可以看到，服务器端相应客户端请求后立即断开连接。换言之，服务器端不会维持客户端状态。即使同一客户端再次发送请求，服务器端也无法辨认出原先是哪个，而会以相同方式处理新请求。因此，HTTP又称 “无状态的Stateless协议”。
+>[!NOTE] Cookie & Session
+>为了弥补HTTP无法保持连接的缺点，Web编程中通常会使用Cookie和Session技术。相信各位都接触过购物网站的购物车功能，即使关闭浏览器也不会丢失购物车内的信息（甚至不用登录）。这种保持状态的功能都是通过Cookie和Session技术实现的。
+
+**请求消息（Request Message）的结构**
+下面介绍客户端向服务器端发送的请求消息的结构。Web服务器端需要解析并响应客户端请求，客户端和服务端之间的数据请求方式标准如图24-2所示。
+![](assets/Pasted%20image%2020250411185506.png)
+<center>图24-2 HTTP请求头</center>
+
+从图24-2中可以看到，请求消息可以分为请求行、消息头、消息体等3个部分。其中，请求行中含有请求方式（请求目的）信息。典型的请求方式有GET和POST，GET主要用于请求数据，POST主要用于传输数据。为了降低复杂度，我们实现只能响应GET请求的Web服务器端。下面解释图24-2中的请求行信息。其中 “GET /index.html HTTP/1.1” 具有如下含义：
+
+>请求（GET）index.html文件，希望以1.1版本的HTTP协议进行通信。
+
+请求行只能通过1行（line）发送，因此，服务端很容易从HTTP请求中提取第一行，并分析请求行中的信息。
+请求行下面的消息头中包含发送请求的（将要接收响应信息的）浏览器信息、用户认证信息等关于HTTP消息的附加信息。最后的消息体中装有客户端向服务器端传输的数据，为了装入数据，需要以POST方式发送请求。但我们的目标是实现GET方式的服务器端，所以可以忽略这部分内容。另外，消息体和消息头之间以空行分开，因此不会发生边界问题。
+
+**响应消息（Response Message）的结构**
+下面介绍Web服务器端向客户端传递的响应信息的结构。从图24-3中可以看到，该响应消息由状态行、头信息、消息体等3个部分构成。状态行中含有关于请求的状态信息，这是其与请求消息相比最为显著的区别。
+![](assets/Pasted%20image%2020250411191000.png)
+<center>图24-3 HTTP响应头</center>
+
+从图24-3中可以看到，第一个字符串状态中含有关于客户端请求的处理结果。例如，客户端你请求index.html文件时，表示index.html文件是否存在、服务器端是否发生问题而无法响应等不同情况的信息将写入状态行。图24-3中的 “HTTP/1.1 200 OK” 具有如下含义：
+
+>我想用HTTP1.1版本进行响应，你的请求已正确处理（200 OK）
+
+表示 “客户端请求的执行结果” 的数字称为状态码，典型的有以下几种。
+- 200 OK：成功处理了请求！
+- 404 Not Found：请求的文件不存在！
+- 400 Bad Request：请求方式错误，请检查！
+
+消息头中含有传输的数据类型和长度等信息。图24-3中的消息头含有如下信息：
+
+>服务器端名为SimpleWebServer，传输的数据类型为text/html（html格式的文本数据）/数据长度不超过2048字节。
+
+最后插入1个空行后，通过消息体发送客户端请求的文件数据。以上就是实现Web服务器端过程中必要的HTTP协议。
+
+#### 24.2 实现简单的Web服务器端
+

@@ -22,27 +22,6 @@
             }
           }
         ]
-      },
-      {
-        "id": "87f4f2d423cb6530",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "3788ca51c83ede6c",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "TCP&IP网络编程笔记 的大纲"
-            }
-          }
-        ]
       }
     ],
     "direction": "vertical"
@@ -190,29 +169,29 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "3788ca51c83ede6c",
+  "active": "716a72bbd998e17e",
   "lastOpenFiles": [
-    "TCP&IP网络编程/23.1/CmplRouEchoServ_win.c",
-    "TCP&IP网络编程/23.1",
-    "TCP&IP网络编程/22.2/CmplRecv.exe",
-    "TCP&IP网络编程/22.2/CmplRoutinesRecv_win.c",
-    "TCP&IP网络编程/22.2/recv.exe",
-    "TCP&IP网络编程/22.2/OverlappedRecv_win.c",
-    "TCP&IP网络编程/22.2/send.exe",
-    "TCP&IP网络编程/22.2/OverlappedSend_win.c",
-    "TCP&IP网络编程/22.2",
+    "TCP&IP网络编程/24.2/webserv_win.c",
+    "TCP&IP网络编程/24.2",
+    "TCP&IP网络编程/assets/Pasted image 20250411191000.png",
+    "TCP&IP网络编程/assets/Pasted image 20250411185506.png",
+    "TCP&IP网络编程/assets/Pasted image 20250411184416.png",
+    "TCP&IP网络编程/23.3/serv.exe",
+    "TCP&IP网络编程/23.3/IOCPChatServ_win.c",
+    "TCP&IP网络编程/test/test.exe",
+    "TCP&IP网络编程/test/test.c",
+    "TCP&IP网络编程/test",
+    "TCP&IP网络编程/23.3/IOCPChatServ_win2.c",
+    "TCP&IP网络编程/23.2/a.exe",
+    "TCP&IP网络编程/23.3",
+    "TCP&IP网络编程/23.2/serv.exe",
     "TCP&IP网络编程/assets/Pasted image 20250408163024.png",
-    "TCP&IP网络编程/21.3/AsynNotiChatServ_win.exe",
-    "TCP&IP网络编程/21.3/AsynNotiChatServ_win.c",
     "TCP&IP网络编程/assets/Pasted image 20250407214443.png",
     "TCP&IP网络编程/assets/Pasted image 20250407214243.png",
     "TCP&IP网络编程/assets/Pasted image 20250404000259.png",
     "TCP&IP网络编程/TCP&IP网络编程笔记.md",
     "TCP&IP网络编程/assets/Pasted image 20250403231423.png",
     "TCP&IP网络编程/assets/Pasted image 20250403231118.png",
-    "TCP&IP网络编程/assets/Pasted image 20250401234909.png",
-    "TCP&IP网络编程/assets/Pasted image 20250401234340.png",
-    "TCP&IP网络编程/assets/Pasted image 20250401233942.png",
-    "TCP&IP网络编程/assets/Pasted image 20250401233702.png"
+    "TCP&IP网络编程/assets/Pasted image 20250401234909.png"
   ]
 }
