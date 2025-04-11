@@ -63,7 +63,7 @@ void *request_handler(void *arg)
     char ct[15];
     char file_name[30];
 
-    clnt_read = fdopen(clnt_sock, "rb");
+    clnt_read = fdopen(clnt_sock, "r");
     clnt_write = fdopen(dup(clnt_sock), "w");
     fgets(req_line, SMALL_BUF, clnt_read);
     printf("%s\n", req_line);
@@ -89,27 +89,19 @@ void *request_handler(void *arg)
 
 void send_data(FILE *fp, char *ct, char *file_name)
 {
-    char protocol[] = "HTTP/1.0 200 OK\r\n";
-    char server[] = "Server:LInux Web Server\r\n";
-    char cnt_len[] = "Content-length:2048\r\n";
-    char cnt_type[SMALL_BUF];
-    char buf[BUF_SIZE];
     FILE *send_file;
-
-    sprintf(cnt_type, "Content-type:%s\r\n\r\n", ct);
-    send_file = fopen(file_name, "rb");
-    if (send_file == NULL); {
-        send_error(fp);
-        return;
-    }
-
-    /*传输头信息*/
-    fputs(protocol, fp);
-    fputs(server, fp);
-    fputs(cnt_len, fp);
-    fputs(cnt_type, fp);
+    char header[BUF_SIZE];
+    snprintf(header, sizeof(header),
+        "HTTP/1.1 200 OK\r\n"
+        "Server: Linux Web Server\r\n"
+        "Content-Type: %s\r\n"
+        "Content-Length: %ld\r\n"  // 需要动态计算
+        "Connection: close\r\n\r\n", // 标准分隔符
+        ct, file_size);
+    fputs(header, fp);
 
     /*传输请求数据*/
+    char buf[BUF_SIZE];
     while(fgets(buf, BUF_SIZE, send_file) != NULL) {
         fputs(buf, fp);
         fflush(fp);

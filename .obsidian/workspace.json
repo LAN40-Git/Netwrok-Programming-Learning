@@ -22,6 +22,27 @@
             }
           }
         ]
+      },
+      {
+        "id": "d15d473ce354b951",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b554a8d8f603edd8",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TCP&IP网络编程/TCP&IP网络编程笔记.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "TCP&IP网络编程笔记 的大纲"
+            }
+          }
+        ]
       }
     ],
     "direction": "vertical"
@@ -171,6 +192,8 @@
   },
   "active": "716a72bbd998e17e",
   "lastOpenFiles": [
+    "TCP&IP网络编程/24.2/webserv_linux.c",
+    "TCP&IP网络编程/24.2/webserv_linux",
     "TCP&IP网络编程/24.2/planet.html",
     "TCP&IP网络编程/24.2/index.html",
     "TCP&IP网络编程/24.2/webserv.exe",
@@ -183,8 +206,6 @@
     "TCP&IP网络编程/23.3/IOCPChatServ_win.c",
     "TCP&IP网络编程/test/test.exe",
     "TCP&IP网络编程/test/test.c",
-    "TCP&IP网络编程/test",
-    "TCP&IP网络编程/23.3/IOCPChatServ_win2.c",
     "TCP&IP网络编程/assets/Pasted image 20250408163024.png",
     "TCP&IP网络编程/assets/Pasted image 20250407214443.png",
     "TCP&IP网络编程/assets/Pasted image 20250407214243.png",
