@@ -42,6 +42,10 @@ int main(int argc, char *argv[])
     SOCKET hServSock;
     SOCKADDR_IN servAddr;
     DWORD recvBytes, flags = 0;
+    if (argc != 2) {
+        printf("Usage : %s <port>\n", argv[0]);
+        exit(1);
+    }
 
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0)
         ErrorHandling("WSAStartup() error!");

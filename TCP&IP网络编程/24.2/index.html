@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>天体运行模拟</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            background: #000;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="universe"></canvas>
+
+    <script>
+        const canvas = document.getElementById('universe');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置画布尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 天体参数
+        const bodies = {
+            sun: {
+                radius: 30,
+                color: '#FFD700',
+                x: canvas.width/2,
+                y: canvas.height/2
+            },
+            earth: {
+                radius: 10,
+                color: '#4169E1',
+                orbitRadius: 150,
+                angle: 0,
+                speed: 0.01,
+                moons: [{
+                    radius: 4,
+                    color: '#888',
+                    orbitRadius: 25,
+                    angle: 0,
+                    speed: 0.03
+                }]
+            },
+            mars: {
+                radius: 8,
+                color: '#CD5C5C',
+                orbitRadius: 220,
+                angle: 0,
+                speed: 0.007,
+                moons: [{
+                    radius: 3,
+                    color: '#999',
+                    orbitRadius: 20,
+                    angle: 0,
+                    speed: 0.02
+                }]
+            }
+        };
+
+        // 绘制天体
+        function drawBody(body, centerX, centerY) {
+            ctx.beginPath();
+            ctx.arc(body.x, body.y, body.radius, 0, Math.PI * 2);
+            ctx.fillStyle = body.color;
+            ctx.fill();
+            
+            // 绘制轨道
+            if(centerX && centerY) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, body.orbitRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.stroke();
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制太阳
+            drawBody(bodies.sun);
+            
+            // 更新行星位置
+            updatePlanet(bodies.earth, bodies.sun);
+            updatePlanet(bodies.mars, bodies.sun);
+            
+            requestAnimationFrame(animate);
+        }
+
+        // 更新行星及其卫星位置
+        function updatePlanet(planet, centerBody) {
+            // 更新行星位置
+            planet.angle += planet.speed;
+            planet.x = centerBody.x + Math.cos(planet.angle) * planet.orbitRadius;
+            planet.y = centerBody.y + Math.sin(planet.angle) * planet.orbitRadius;
+            drawBody(planet, centerBody.x, centerBody.y);
+            
+            // 更新卫星位置
+            planet.moons.forEach(moon => {
+                moon.angle += moon.speed;
+                moon.x = planet.x + Math.cos(moon.angle) * moon.orbitRadius;
+                moon.y = planet.y + Math.sin(moon.angle) * moon.orbitRadius;
+                drawBody(moon, planet.x, planet.y);
+            });
+        }
+
+        // 添加交互功能：拖动视图
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if(isDragging) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                ctx.setTransform(1,0,0,1,translateX,translateY);
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseleave', () => isDragging = false);
+
+        // 启动动画
+        animate();
+    </script>
+</body>
+</html>
